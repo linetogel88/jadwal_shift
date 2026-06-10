@@ -1,327 +1,249 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Jadwal Shift - History dengan Tampilan Penuh</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>Jadwal Shift | Mobile Friendly</title>
+
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+/* ========== RESET & TEMA MODERN ========== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f4f7fc;
+  padding: 20px 16px;
+  color: #1e2a3e;
+}
+
+/* navigasi */
+.nav-container {
+  background: white;
+  border-radius: 60px;
+  padding: 10px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2edf2;
+}
+
+.nav-btn {
+  background: #2c7da0;
+  border: none;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  letter-spacing: 0.3px;
+}
+
+.nav-btn.today-btn {
+  background: #2c7a47;
+}
+
+.nav-btn:active {
+  transform: scale(0.97);
+  background-color: #1f5e7a;
+}
+
+.nav-btn.today-btn:active {
+  background-color: #1e5a38;
+}
+
+.nav-info {
+  font-size: 14px;
+  font-weight: 500;
+  background: #eef3f7;
+  padding: 6px 16px;
+  border-radius: 40px;
+  color: #1e4a6e;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* kartu tanggal */
+.date-box {
+  background: white;
+  border-radius: 28px;
+  padding: 20px 18px;
+  margin-bottom: 30px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e9f0f3;
+}
+
+.date-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f5068;
+  margin-bottom: 24px;
+  background: #f0f9fe;
+  display: inline-block;
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 60px;
+  letter-spacing: 0.5px;
+}
+
+/* GRID: Pagi & Malam bersebelahan (mobile & desktop) */
+.wrapper-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+/* shift box general */
+.shift-card {
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e6edf2;
+  transition: all 0.2s;
+}
+
+.shift-header {
+  background: #d9eef7;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 14px 8px;
+  color: #1a4b63;
+  letter-spacing: 0.3px;
+}
+
+.jam-block {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px;
+  background: #f8fafc;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.jam-pagi {
+  background-color: #e3f5e9;
+  color: #1c6e3f;
+}
+
+.jam-malam {
+  background-color: #e2eaf1;
+  color: #1e506e;
+}
+
+.offday-card {
+  grid-column: span 2;
+  margin-top: 0;
+  border: 1px solid #ffe1c6;
+  background: #fffaf5;
+}
+
+.offday-header {
+  background: #f5e2cf;
+  color: #b45f2b;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 12px;
+}
+
+.name-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.name-item {
+  text-align: center;
+  padding: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #f0f2f5;
+  color: white;
+  text-shadow: 0 0 1px rgba(0,0,0,0.2);
+  font-size: 14px;
+}
+
+/* role styling soft */
+.role-csline { background-color: #2c5282; }
+.role-cs { background-color: #4299c1; color: #0f2c3b; text-shadow: none; }
+.role-kks { background-color: #805ad5; }
+.role-ks { background-color: #38a169; color: #0f2a18; text-shadow: none; }
+
+.empty-state {
+  text-align: center;
+  padding: 16px;
+  color: #8ba3b0;
+  font-style: italic;
+  background: #fafdff;
+  font-size: 14px;
+}
+
+/* responsive: jika layar sangat kecil (<480px) pastikan gap tetap rapi */
+@media (max-width: 550px) {
   body {
-    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    background: linear-gradient(145deg, #e0eafc 0%, #cfdef3 100%);
-    min-height: 100vh;
-    padding: 16px;
+    padding: 12px;
   }
-
-  .main-container {
-    max-width: 700px;
-    margin: 0 auto;
-    position: relative;
+  .wrapper-grid {
+    gap: 12px;
   }
-
-  /* Header dengan tombol history */
-  .app-header {
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 60px;
-    padding: 12px 20px;
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  .shift-header {
+    font-size: 16px;
+    padding: 10px;
   }
-
-  .app-header h1 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #2c2087, #5e4bdb);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .jam-block {
+    font-size: 13px;
+    padding: 8px;
   }
-
-  .back-btn, .nav-btn {
-    background: #2c2087;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 40px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    transition: opacity 0.2s;
+  .name-item {
+    padding: 10px;
+    font-size: 13px;
   }
-
-  .nav-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  .nav-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-width: 70px;
   }
-
-  .history-btn {
-    background: #2c2087;
-    border: none;
-    width: 48px;
-    height: 48px;
-    border-radius: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  }
-
-  .history-btn span {
-    font-size: 28px;
-    font-weight: bold;
-    color: white;
-    letter-spacing: 4px;
-    transform: rotate(90deg);
-    display: inline-block;
-  }
-
-  /* Pagination Navigation */
-  .pagination-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    background: rgba(255,255,255,0.7);
-    padding: 10px 16px;
-    border-radius: 40px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  }
-
-  .page-indicator {
-    font-weight: bold;
-    color: #2c2087;
-    font-size: 0.95rem;
-  }
-
-  /* Kartu tanggal (untuk tampilan biasa & history detail) */
-  .date-card {
-    background: rgba(255, 255, 255, 0.96);
-    border-radius: 32px;
-    margin-bottom: 24px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    overflow: hidden;
-  }
-
-  .date-header {
-    background: linear-gradient(135deg, #2c2087 0%, #1e1666 100%);
-    padding: 14px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .date-title {
-    color: white;
-    font-weight: bold;
-    font-size: 1rem;
-  }
-
-  .summary-badge {
-    display: flex;
-    gap: 8px;
-    background: rgba(255,255,255,0.2);
+  .nav-info {
+    font-size: 12px;
     padding: 4px 12px;
-    border-radius: 40px;
-    font-size: 0.7rem;
-    font-weight: bold;
-    color: white;
   }
-
-  .shift-content {
-    padding: 16px;
-    background: white;
+  .date-title {
+    font-size: 18px;
+    padding: 10px 0;
   }
+}
 
-  .shift-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    justify-content: center;
+/* desktop tetap enak dilihat */
+@media (min-width: 800px) {
+  .wrapper-grid {
+    gap: 24px;
   }
-
-  .shift-box {
-    flex: 1;
-    min-width: 250px;
-    background: #fefefe;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  .date-box {
+    padding: 28px;
   }
-
-  .header-shift {
-    background: #d7e8ee;
-    text-align: center;
-    font-weight: 800;
-    padding: 10px;
-  }
-
-  .jam {
-    text-align: center;
-    font-weight: bold;
-    padding: 8px;
-    font-size: 0.85rem;
-  }
-
-  .jam-pagi { background: #90EE90; color: #1e3a1e; }
-  .jam-malam { background: #006400; color: white; }
-
-  .name-list {
-    padding: 4px 0;
-  }
-
-  .name {
-    text-align: center;
-    padding: 8px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    border-bottom: 1px solid #e9ecef;
-    color: white;
-    text-shadow: 0 0 1px rgba(0,0,0,0.3);
-  }
-
-  .csline { background: #1E3A8A; }
-  .cs { background: #87CEEB; color: #000; text-shadow: none; }
-  .kks { background: #9B59B6; }
-  .ks { background: #2ECC71; }
-
-  .empty {
-    text-align: center;
-    padding: 16px;
-    color: #777;
-    font-style: italic;
-  }
-
-  .offday-title {
-    background: #3a1b88;
-    color: white;
-    text-align: center;
-    font-weight: bold;
-    padding: 10px;
-  }
-
-  /* SIDEBAR (HISTORY) */
-  .sidebar {
-    position: fixed;
-    top: 0;
-    right: -320px;
-    width: 300px;
-    height: 100%;
-    background: white;
-    box-shadow: -5px 0 20px rgba(0,0,0,0.2);
-    transition: right 0.3s ease;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    border-radius: 20px 0 0 20px;
-  }
-
-  .sidebar.open {
-    right: 0;
-  }
-
-  .sidebar-header {
-    background: #2c2087;
-    color: white;
-    padding: 20px;
-    font-size: 1.3rem;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .close-sidebar {
-    background: none;
-    border: none;
-    font-size: 28px;
-    color: white;
-    cursor: pointer;
-  }
-
-  .history-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-  }
-
-  .history-item {
-    background: #f1f5f9;
-    margin-bottom: 12px;
-    padding: 12px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: 0.1s;
-    font-weight: 600;
-    border-left: 5px solid #2c2087;
-  }
-
-  .history-item:active {
-    background: #e2e8f0;
-  }
-
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.4);
-    visibility: hidden;
-    opacity: 0;
-    transition: 0.2s;
-    z-index: 999;
-  }
-
-  .overlay.active {
-    visibility: visible;
-    opacity: 1;
-  }
-
-  @media (max-width: 550px) {
-    .sidebar { width: 280px; }
-    .date-header { flex-direction: column; align-items: stretch; text-align: center; }
-    .summary-badge { justify-content: center; }
-    .shift-box { min-width: 100%; }
-  }
+}
 </style>
 </head>
-<body>
-<div class="main-container">
-  <div class="app-header" id="appHeader">
-    <h1>📋 Jadwal Shift</h1>
-    <button class="history-btn" id="historyBtn"><span>⋮</span></button>
-  </div>
-  <div id="mainContent">Memuat jadwal...</div>
-</div>
 
-<!-- Sidebar history -->
-<div class="sidebar" id="historySidebar">
-  <div class="sidebar-header">
-    📜 History Shift
-    <button class="close-sidebar" id="closeSidebarBtn">✕</button>
-  </div>
-  <div class="history-list" id="historyList">
-    <div style="padding: 12px; text-align:center;">Loading...</div>
-  </div>
-</div>
-<div class="overlay" id="overlay"></div>
+<body>
+
+<div id="app">⏳ Memuat jadwal...</div>
 
 <script>
 const SHEET_ID = "1PF5foBN9USoU7XBct6u4uOObUdnH30c1MPoKzHuhv6w";
@@ -330,197 +252,194 @@ const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:
 
 const roleOrder = ["CS LINE", "CS", "KKS", "KS"];
 
-// Mapping bahasa
+// mapping hari & bulan
 const hariInggris = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 const hariIndonesia = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 const bulanInggris = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 const bulanIndonesia = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
-function parseDateObject(value) {
-  if (!value) return null;
-  let str = String(value).trim();
-  let match = str.match(/Date\((\d+),(\d+),(\d+)\)/);
-  if (match) {
-    return new Date(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+function getTodayLocalDate() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function parseDateFromRaw(rawValue) {
+  if (!rawValue) return null;
+  let str = String(rawValue).trim();
+  let dateMatch = str.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (dateMatch) {
+    let tahun = parseInt(dateMatch[1]);
+    let bulan = parseInt(dateMatch[2]);
+    let tanggal = parseInt(dateMatch[3]);
+    let dateObj = new Date(tahun, bulan, tanggal);
+    if (!isNaN(dateObj.getTime())) return new Date(tahun, bulan, tanggal);
   }
   let regex = /([A-Za-z]+),\s*(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/i;
-  let m = str.match(regex);
-  if (m) {
-    let bulanEn = m[3].toUpperCase();
-    let bulanIdx = bulanInggris.indexOf(bulanEn);
-    if (bulanIdx !== -1) {
-      return new Date(parseInt(m[4]), bulanIdx, parseInt(m[2]));
-    }
+  let match = str.match(regex);
+  if (match) {
+    let tanggal = parseInt(match[2]);
+    let bulanEN = match[3].toUpperCase();
+    let tahun = parseInt(match[4]);
+    let idxBulan = bulanInggris.indexOf(bulanEN);
+    if (idxBulan !== -1) return new Date(tahun, idxBulan, tanggal);
   }
   if (!isNaN(str) && str.length > 5) {
     let num = parseFloat(str);
     let excelEpoch = new Date(1899, 11, 30);
-    let d = new Date(excelEpoch.getTime() + num * 86400000);
-    if (!isNaN(d.getTime()) && d.getFullYear() > 1900) return d;
+    let dateObj = new Date(excelEpoch.getTime() + num * 86400000);
+    if (!isNaN(dateObj.getTime()) && dateObj.getFullYear() > 1900) {
+      return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+    }
   }
-  let d = new Date(str);
-  return isNaN(d.getTime()) ? null : d;
+  let dateObj = new Date(str);
+  if (!isNaN(dateObj.getTime())) return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+  return null;
 }
 
-function formatTanggalIndonesia(raw) {
-  let d = parseDateObject(raw);
-  if (d && !isNaN(d.getTime())) {
-    return `${hariIndonesia[d.getDay()]}, ${d.getDate()} ${bulanIndonesia[d.getMonth()]} ${d.getFullYear()}`;
-  }
-  return String(raw);
+function formatDateIndonesia(dateObj) {
+  if (!dateObj || isNaN(dateObj.getTime())) return "";
+  const hariIndo = hariIndonesia[dateObj.getDay()];
+  const bulanIndo = bulanIndonesia[dateObj.getMonth()];
+  const tanggal = dateObj.getDate();
+  const tahun = dateObj.getFullYear();
+  return `${hariIndo}, ${tanggal} ${bulanIndo} ${tahun}`;
 }
 
-function getDateOnly(dateObj) {
-  return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+// global data
+let masterTanggalList = [];     // { dateObj, colIndex }
+let masterStaffRows = [];       // { nama, role, shiftsByCol: {} }
+let currentIndex = -1;
+
+// role class helper
+function roleClass(role) {
+  if (role === "CS LINE") return "role-csline";
+  if (role === "CS") return "role-cs";
+  if (role === "KKS") return "role-kks";
+  if (role === "KS") return "role-ks";
+  return "";
 }
 
-let allDatesData = [];
-let upcomingDates = [];
-let expiredDates = [];
-let currentUpcomingIndex = 0; // Variabel untuk melacak halaman saat ini
-
-// Fungsi render shift box 
-function renderShiftBox(title, jam, list, shiftType) {
-  const jamClass = shiftType === "pagi" ? "jam-pagi" : "jam-malam";
-  let namesHtml = list.length ? '' : '<div class="empty">Tidak ada staff</div>';
-  list.forEach(item => {
-    let roleClass = '';
-    if (item.role === "CS LINE") roleClass = "csline";
-    else if (item.role === "CS") roleClass = "cs";
-    else if (item.role === "KKS") roleClass = "kks";
-    else if (item.role === "KS") roleClass = "ks";
-    namesHtml += `<div class="name ${roleClass}">${item.nama}</div>`;
-  });
-  return `<div class="shift-box">
-    <div class="header-shift">${title}</div>
-    <div class="jam ${jamClass}">${jam}</div>
-    <div class="name-list">${namesHtml}</div>
-  </div>`;
-}
-
-function renderOffdayBox(list) {
-  let namesHtml = list.length ? '' : '<div class="empty">Tidak ada staff</div>';
-  list.forEach(item => {
-    let roleClass = '';
-    if (item.role === "CS LINE") roleClass = "csline";
-    else if (item.role === "CS") roleClass = "cs";
-    else if (item.role === "KKS") roleClass = "kks";
-    else if (item.role === "KS") roleClass = "ks";
-    namesHtml += `<div class="name ${roleClass}">${item.nama}</div>`;
-  });
-  return `<div class="shift-box">
-    <div class="offday-title">🚫 OFFDAY</div>
-    <div class="name-list">${namesHtml}</div>
-  </div>`;
-}
-
-function renderFullDateCard(item) {
-  const { formatted, data } = item;
-  const count = { PAGI: data.PAGI.length, MALAM: data.MALAM.length, OFFDAY: data.OFFDAY.length };
-  const summary = `<div class="summary-badge"><div>🌞 ${count.PAGI}</div><div>🌙 ${count.MALAM}</div><div>🚫 ${count.OFFDAY}</div></div>`;
-  return `
-    <div class="date-card">
-      <div class="date-header">
-        <div class="date-title">📅 ${formatted}</div>
-        ${summary}
-      </div>
-      <div class="shift-content">
-        <div class="shift-wrapper">
-          ${renderShiftBox("PAGI", "07:45 - 19:45", data.PAGI, "pagi")}
-          <div>
-            ${renderShiftBox("MALAM", "19:45 - 07:45", data.MALAM, "malam")}
-            ${renderOffdayBox(data.OFFDAY)}
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// Render daftar utama dengan Pagination (Next & Prev)
-function renderMainDashboard() {
-  if (upcomingDates.length === 0) {
-    document.getElementById("mainContent").innerHTML = '<div class="date-card" style="padding:20px; text-align:center;">Tidak ada jadwal mendatang</div>';
+// RENDER ULANG dengan GRID (PAGI & MALAM bersebelahan, OFFDAY di bawah melintang)
+function renderByCurrentIndex() {
+  if (!masterTanggalList.length || currentIndex < 0 || currentIndex >= masterTanggalList.length) {
+    document.getElementById("app").innerHTML = `<div style="background:#fff3cd; padding:16px; border-radius:20px;">⚠️ Data tanggal tidak valid.</div>`;
     return;
   }
-
-  // Pencegahan index out of bounds
-  if (currentUpcomingIndex < 0) currentUpcomingIndex = 0;
-  if (currentUpcomingIndex >= upcomingDates.length) currentUpcomingIndex = upcomingDates.length - 1;
-
-  const item = upcomingDates[currentUpcomingIndex];
   
-  // Tombol Prev & Next
-  const navHtml = `
-    <div class="pagination-nav">
-      <button class="nav-btn" id="prevBtn" ${currentUpcomingIndex === 0 ? 'disabled' : ''}>← Prev</button>
-      <div class="page-indicator">${currentUpcomingIndex + 1} / ${upcomingDates.length}</div>
-      <button class="nav-btn" id="nextBtn" ${currentUpcomingIndex === upcomingDates.length - 1 ? 'disabled' : ''}>Next →</button>
+  const target = masterTanggalList[currentIndex];
+  const dateObj = target.dateObj;
+  const colIndex = target.colIndex;
+  const tanggalFormatted = formatDateIndonesia(dateObj);
+  
+  // kumpulkan data shift
+  const data = { PAGI: [], MALAM: [], OFFDAY: [] };
+  for (let staff of masterStaffRows) {
+    const shiftRaw = staff.shiftsByCol[colIndex] || "";
+    const shift = shiftRaw.toUpperCase();
+    if (staff.nama && data[shift]) {
+      data[shift].push({ nama: staff.nama, role: staff.role });
+    }
+  }
+  // urutkan berdasarkan roleOrder
+  Object.keys(data).forEach(shift => {
+    data[shift].sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
+  });
+  
+  // fungsi render list nama
+  const renderNameList = (list) => {
+    if (!list.length) return `<div class="empty-state">— Tidak ada staff —</div>`;
+    return list.map(item => `<div class="name-item ${roleClass(item.role)}">${item.nama}</div>`).join('');
+  };
+  
+  const html = `
+    <div class="nav-container">
+      <button class="nav-btn" id="prevBtn">◀ Sebelumnya</button>
+      <button class="nav-btn today-btn" id="todayBtn">📅 Hari Ini</button>
+      <button class="nav-btn" id="nextBtn">Berikutnya ▶</button>
+      <div class="nav-info" id="dateInfo">${currentIndex+1} / ${masterTanggalList.length}</div>
+    </div>
+    <div class="date-box">
+      <div class="date-title">📅 ${tanggalFormatted}</div>
+      
+      <!-- GRID: PAGI dan MALAM bersebelahan -->
+      <div class="wrapper-grid">
+        <!-- SHIFT PAGI -->
+        <div class="shift-card">
+          <div class="shift-header">🌅 SHIFT PAGI</div>
+          <div class="jam-block jam-pagi">07:45 - 19:45</div>
+          <div class="name-list">${renderNameList(data.PAGI)}</div>
+        </div>
+        
+        <!-- SHIFT MALAM -->
+        <div class="shift-card">
+          <div class="shift-header">🌙 SHIFT MALAM</div>
+          <div class="jam-block jam-malam">19:45 - 07:45</div>
+          <div class="name-list">${renderNameList(data.MALAM)}</div>
+        </div>
+      </div>
+      
+      <!-- OFFDAY (full width di bawah) -->
+      <div class="shift-card offday-card">
+        <div class="offday-header">🚫 OFFDAY / LIBUR</div>
+        <div class="name-list">${renderNameList(data.OFFDAY)}</div>
+      </div>
     </div>
   `;
-
-  document.getElementById("mainContent").innerHTML = navHtml + renderFullDateCard(item);
-
-  // Event listener untuk tombol navigasi
-  document.getElementById('prevBtn').addEventListener('click', () => {
-    currentUpcomingIndex--;
-    renderMainDashboard();
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Auto scroll ke atas
-  });
-
-  document.getElementById('nextBtn').addEventListener('click', () => {
-    currentUpcomingIndex++;
-    renderMainDashboard();
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Auto scroll ke atas
-  });
-}
-
-// Tampilkan detail history (satu tanggal, penuh, dengan tombol kembali)
-function showHistoryDetail(item) {
-  const backButton = `<button class="back-btn" id="backToDashboardBtn">← Kembali</button>`;
-  // Ganti header: hilangkan tombol history, tambah tombol back
-  const header = document.getElementById("appHeader");
-  header.innerHTML = `<h1>📅 ${item.formatted}</h1>${backButton}`;
   
-  // Tambah event listener tombol back
-  const backBtn = document.getElementById("backToDashboardBtn");
-  backBtn.addEventListener("click", () => {
-    // Kembalikan header seperti semula
-    header.innerHTML = `<h1>📋 Jadwal Shift</h1><button class="history-btn" id="historyBtn"><span>⋮</span></button>`;
-    // Re-attach event history button
-    document.getElementById("historyBtn").addEventListener("click", openSidebar);
-    // Render ulang dashboard (kembali ke halaman terakhir yang dilihat)
-    renderMainDashboard();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  document.getElementById("app").innerHTML = html;
   
-  // Tampilkan konten hanya satu kartu tanggal tersebut
-  document.getElementById("mainContent").innerHTML = renderFullDateCard(item);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // attach events
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const todayBtn = document.getElementById("todayBtn");
+  if (prevBtn) prevBtn.onclick = () => navigate(-1);
+  if (nextBtn) nextBtn.onclick = () => navigate(1);
+  if (todayBtn) todayBtn.onclick = () => goToToday();
 }
 
-// Sidebar logic
-let sidebar, overlay;
-function openSidebar() {
-  sidebar.classList.add('open');
-  overlay.classList.add('active');
-}
-function closeSidebar() {
-  sidebar.classList.remove('open');
-  overlay.classList.remove('active');
-}
-function setupSidebar() {
-  sidebar = document.getElementById('historySidebar');
-  overlay = document.getElementById('overlay');
-  const historyBtn = document.getElementById('historyBtn');
-  const closeBtn = document.getElementById('closeSidebarBtn');
-  
-  if(historyBtn) historyBtn.addEventListener('click', openSidebar);
-  closeBtn.addEventListener('click', closeSidebar);
-  overlay.addEventListener('click', closeSidebar);
+function navigate(delta) {
+  let newIndex = currentIndex + delta;
+  if (newIndex >= 0 && newIndex < masterTanggalList.length) {
+    currentIndex = newIndex;
+    renderByCurrentIndex();
+  } else {
+    const btn = delta === -1 ? document.getElementById("prevBtn") : document.getElementById("nextBtn");
+    if (btn) {
+      btn.style.transform = "scale(0.95)";
+      setTimeout(() => { if(btn) btn.style.transform = ""; }, 150);
+    }
+  }
 }
 
-// Fetch data dari Google Sheet
+function goToToday() {
+  const todayDate = getTodayLocalDate();
+  let foundIdx = -1;
+  for (let i = 0; i < masterTanggalList.length; i++) {
+    if (masterTanggalList[i].dateObj.getTime() === todayDate.getTime()) {
+      foundIdx = i;
+      break;
+    }
+  }
+  if (foundIdx !== -1) {
+    currentIndex = foundIdx;
+    renderByCurrentIndex();
+  } else {
+    // fallback terdekat
+    let closestIdx = 0;
+    let minDiff = Math.abs(masterTanggalList[0].dateObj - todayDate);
+    for (let i = 1; i < masterTanggalList.length; i++) {
+      const diff = Math.abs(masterTanggalList[i].dateObj - todayDate);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIdx = i;
+      }
+    }
+    currentIndex = closestIdx;
+    renderByCurrentIndex();
+  }
+}
+
+// ------------------ FETCH & PROSES DATA ------------------
 fetch(url)
   .then(res => res.text())
   .then(text => {
@@ -530,95 +449,109 @@ fetch(url)
     function getCell(r, c) {
       const cell = rows[r]?.c[c];
       if (!cell) return "";
-      let val = cell.f !== undefined && cell.f !== null ? cell.f : (cell.v !== undefined ? cell.v : "");
-      return String(val).trim();
+      let value = "";
+      if (cell.f !== undefined && cell.f !== null) value = cell.f;
+      else if (cell.v !== undefined && cell.v !== null) value = cell.v;
+      else value = "";
+      return String(value).trim();
     }
-
-    // Cari baris tanggal
+    
+    // 1. cari baris tanggal
     let tanggalRowIndex = -1;
-    for (let r = 0; r <= Math.min(4, rows.length - 1); r++) {
+    for (let r = 0; r <= Math.min(4, rows.length-1); r++) {
+      let found = false;
       for (let col = 4; col <= 27; col++) {
-        if (getCell(r, col) && (getCell(r, col).includes("Date") || getCell(r, col).match(/\d/))) {
-          tanggalRowIndex = r;
+        const val = getCell(r, col);
+        if (val && (val.includes("Date") || val.match(/\d/) || val.includes("/") || val.includes("-") || val.includes(","))) {
+          found = true;
           break;
         }
       }
-      if (tanggalRowIndex !== -1) break;
+      if (found) { tanggalRowIndex = r; break; }
     }
-    if (tanggalRowIndex === -1) throw new Error("Baris tanggal tidak ditemukan");
-
-    // Cari baris staf
+    if (tanggalRowIndex === -1) {
+      document.getElementById("app").innerHTML = `<div style="background:#fff3cd; padding:16px;">⚠️ Tidak menemukan baris tanggal.</div>`;
+      return;
+    }
+    
+    // 2. cari baris staf pertama
     let startRow = 5;
-    for (let r = 3; r <= 40; r++) if (getCell(r, 1)) { startRow = r; break; }
+    for (let r = 3; r <= 40; r++) {
+      const namaTest = getCell(r, 1);
+      if (namaTest && namaTest.length > 0) { startRow = r; break; }
+    }
     let endRow = startRow;
-    for (let r = startRow; r <= Math.min(100, rows.length - 1); r++) {
-      if (getCell(r, 1)) endRow = r;
+    for (let r = startRow; r <= Math.min(100, rows.length-1); r++) {
+      const nama = getCell(r, 1);
+      if (nama && nama.length > 0) endRow = r;
       else {
-        let empty = 0;
-        for (let i = r; i <= r+2 && i < rows.length; i++) if (!getCell(i,1)) empty++;
-        if (empty >= 3) break;
+        let emptyCount = 0;
+        for (let i = r; i <= Math.min(r+2, rows.length-1); i++) {
+          if (!getCell(i,1)) emptyCount++;
+        }
+        if (emptyCount >= 3) break;
       }
     }
-
-    // Kumpulkan data per kolom tanggal
+    
+    // 3. kumpulkan semua tanggal kolom E-AB (index 4-27)
+    const tanggalList = [];
     for (let col = 4; col <= 27; col++) {
-      let rawDate = getCell(tanggalRowIndex, col);
-      let dateObj = parseDateObject(rawDate);
-      if (!dateObj) continue;
-      let dataShift = { PAGI: [], MALAM: [], OFFDAY: [] };
-      for (let row = startRow; row <= endRow; row++) {
-        let nama = getCell(row, 1);
-        let role = getCell(row, 3).toUpperCase();
-        let shift = getCell(row, col).toUpperCase();
-        if (nama && dataShift[shift]) dataShift[shift].push({ nama, role });
+      const raw = getCell(tanggalRowIndex, col);
+      if (!raw) continue;
+      const dateObj = parseDateFromRaw(raw);
+      if (dateObj && !isNaN(dateObj.getTime())) {
+        tanggalList.push({ dateObj, colIndex: col });
       }
-      Object.keys(dataShift).forEach(s => {
-        dataShift[s].sort((a,b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
-      });
-      allDatesData.push({
-        dateObj: getDateOnly(dateObj),
-        formatted: formatTanggalIndonesia(rawDate),
-        data: dataShift
-      });
     }
-
-    allDatesData.sort((a,b) => a.dateObj - b.dateObj);
-    const today = getDateOnly(new Date());
-    upcomingDates = allDatesData.filter(item => item.dateObj >= today);
-    expiredDates = allDatesData.filter(item => item.dateObj < today);
-
-    // Set index awal ke hari ini
-    currentUpcomingIndex = 0; 
-
-    // Render utama
-    renderMainDashboard();
-
-    // Build history list di sidebar
-    const historyListDiv = document.getElementById("historyList");
-    if (expiredDates.length === 0) {
-      historyListDiv.innerHTML = '<div style="padding: 16px; text-align:center;">Belum ada shift lewat</div>';
-    } else {
-      let historyHtml = '';
-      expiredDates.forEach((item, idx) => {
-        historyHtml += `<div class="history-item" data-idx="${idx}">📅 ${item.formatted}</div>`;
-      });
-      historyListDiv.innerHTML = historyHtml;
-      document.querySelectorAll('.history-item').forEach(el => {
-        el.addEventListener('click', (e) => {
-          const idx = parseInt(el.dataset.idx);
-          const selected = expiredDates[idx];
-          showHistoryDetail(selected);
-          closeSidebar(); // tutup sidebar setelah pilih
-        });
-      });
+    tanggalList.sort((a,b) => a.dateObj - b.dateObj);
+    if (tanggalList.length === 0) {
+      document.getElementById("app").innerHTML = `<div style="background:#fff3cd; padding:16px;">⚠️ Tidak ada tanggal valid di sheet.</div>`;
+      return;
     }
-
-    setupSidebar();
+    masterTanggalList = tanggalList;
+    
+    // 4. baca data staff (nama, role, shift per kolom)
+    const staffData = [];
+    for (let row = startRow; row <= endRow; row++) {
+      const nama = getCell(row, 1);
+      if (!nama) continue;
+      const role = getCell(row, 3).toUpperCase();
+      const shiftsMap = {};
+      for (let col = 4; col <= 27; col++) {
+        shiftsMap[col] = getCell(row, col);
+      }
+      staffData.push({ nama, role, shiftsByCol: shiftsMap });
+    }
+    masterStaffRows = staffData;
+    
+    // 5. tentukan index default (hari ini)
+    const today = getTodayLocalDate();
+    let defaultIdx = 0;
+    let found = false;
+    for (let i = 0; i < masterTanggalList.length; i++) {
+      if (masterTanggalList[i].dateObj.getTime() === today.getTime()) {
+        defaultIdx = i;
+        found = true;
+        break;
+      }
+    }
+    if (!found && masterTanggalList.length) {
+      let closest = 0;
+      let minDiff = Math.abs(masterTanggalList[0].dateObj - today);
+      for (let i = 1; i < masterTanggalList.length; i++) {
+        const diff = Math.abs(masterTanggalList[i].dateObj - today);
+        if (diff < minDiff) { minDiff = diff; closest = i; }
+      }
+      defaultIdx = closest;
+    }
+    currentIndex = defaultIdx;
+    renderByCurrentIndex();
   })
   .catch(err => {
-    document.getElementById("mainContent").innerHTML = `<div style="background:#fff0f0; padding:20px; border-radius:28px;">❌ Gagal: ${err.message}</div>`;
+    document.getElementById("app").innerHTML = `<div style="background:#f8d7da; padding:16px; border-radius:20px;">❌ Gagal memuat data: ${err.message}</div>`;
     console.error(err);
   });
 </script>
+
 </body>
 </html>
