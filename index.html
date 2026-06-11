@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-<title>Jadwal Shift | Piala Dunia + Cuti & Offday</title>
+<title>Jadwal Shift | Piala Dunia + Pencarian Staff</title>
 
 <style>
-/* ========== TEMA PIALA DUNIA ========== */
+/* ========== TEMA PIALA DUNIA + MONYET ========== */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -22,6 +22,7 @@ body {
   min-height: 100vh;
 }
 
+/* efek garis lapangan */
 body::before {
   content: "";
   position: fixed;
@@ -35,17 +36,40 @@ body::before {
   z-index: 0;
 }
 
-body::after {
-  content: "⚽🏆⚽";
-  font-size: 110px;
+/* WATERMARK MONYET BERGELANTUNGAN */
+.watermark-monkey {
   position: fixed;
-  bottom: 20px;
-  right: 0px;
-  opacity: 0.08;
+  bottom: 10px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 45px;
+  opacity: 0.2;
   pointer-events: none;
-  z-index: 0;
-  white-space: pre;
-  transform: rotate(-8deg);
+  z-index: 1;
+  white-space: nowrap;
+  overflow-x: hidden;
+  letter-spacing: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  bottom: 15px;
+}
+.watermark-monkey span {
+  display: inline-block;
+  transform: rotate(-5deg);
+  animation: sway 4s infinite ease-in-out;
+}
+@keyframes sway {
+  0% { transform: rotate(-8deg); }
+  50% { transform: rotate(8deg); }
+  100% { transform: rotate(-8deg); }
+}
+
+body::after {
+  content: "";
+  display: none;
 }
 
 #app, .main-header, .nav-container, .date-box {
@@ -265,6 +289,31 @@ body::after {
   border: 1px solid #f3b33d;
 }
 
+/* search box */
+.search-container {
+  margin-bottom: 20px;
+  text-align: center;
+}
+.search-input {
+  width: 100%;
+  max-width: 350px;
+  padding: 12px 20px;
+  border-radius: 60px;
+  border: none;
+  background: #fef7e0;
+  font-size: 16px;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  outline: none;
+  text-align: center;
+  color: #1e2c1a;
+  font-weight: 500;
+}
+.search-input::placeholder {
+  color: #8b6b3c;
+  font-style: italic;
+}
+
 .date-box {
   background: rgba(20, 30, 18, 0.85);
   backdrop-filter: blur(4px);
@@ -376,6 +425,8 @@ body::after {
   .name-item { padding: 10px; }
   .nav-btn { padding: 8px 12px; font-size: 13px; min-width: 70px; }
   .date-title { font-size: 18px; }
+  .search-input { font-size: 14px; padding: 10px 16px; }
+  .watermark-monkey { font-size: 30px; gap: 8px; bottom: 5px; }
 }
 </style>
 </head>
@@ -386,6 +437,11 @@ body::after {
   <button class="menu-btn" id="hamburgerBtn">☰</button>
   <h1>🏆 JADWAL SHIFT LINETOGEL 🏆</h1>
   <div class="header-spacer"></div>
+</div>
+
+<!-- Watermark monyet bergelantungan -->
+<div class="watermark-monkey">
+  <span>🙈</span><span>🐒</span><span>🙉</span><span>🙊</span><span>🐵</span><span>🙈</span><span>🐒</span>
 </div>
 
 <div id="app">⏳ Memuat jadwal Piala Dunia...</div>
@@ -469,6 +525,8 @@ function formatDateIndonesia(dateObj) {
 let masterTanggalList = [];
 let masterStaffRows = [];
 let currentIndex = -1;
+let currentDataForSearch = { PAGI: [], MALAM: [], OFFDAY: [] };
+let currentSearchTerm = "";
 
 function roleClass(role) {
   if (role === "CS LINE") return "role-csline";
@@ -478,7 +536,40 @@ function roleClass(role) {
   return "";
 }
 
-// ======================= MENU & MODAL DENGAN NAVIGASI HISTORY =======================
+// Render daftar nama berdasarkan filter search
+function renderFilteredLists() {
+  const searchTerm = currentSearchTerm.toLowerCase();
+  const filterList = (list) => {
+    if (!searchTerm) return list;
+    return list.filter(item => item.nama.toLowerCase().includes(searchTerm));
+  };
+  const filteredPagi = filterList(currentDataForSearch.PAGI);
+  const filteredMalam = filterList(currentDataForSearch.MALAM);
+  const filteredOffday = filterList(currentDataForSearch.OFFDAY);
+  
+  const renderNameList = (list) => {
+    if (!list.length) return `<div class="empty-state">${searchTerm ? "Tidak ada staff yang cocok" : "— Tidak ada staff —"}</div>`;
+    return list.map(item => `<div class="name-item ${roleClass(item.role)}">${item.nama}</div>`).join('');
+  };
+  
+  const pagiDiv = document.querySelector('.shift-card:first-child .name-list');
+  const malamDiv = document.querySelector('.shift-card:nth-child(2) .name-list');
+  const offdayDiv = document.querySelector('.offday-card .name-list');
+  if (pagiDiv) pagiDiv.innerHTML = renderNameList(filteredPagi);
+  if (malamDiv) malamDiv.innerHTML = renderNameList(filteredMalam);
+  if (offdayDiv) offdayDiv.innerHTML = renderNameList(filteredOffday);
+}
+
+function initSearch() {
+  let searchBox = document.getElementById('searchStaff');
+  if (!searchBox) return;
+  searchBox.addEventListener('input', (e) => {
+    currentSearchTerm = e.target.value;
+    renderFilteredLists();
+  });
+}
+
+// ======================= MENU & MODAL =======================
 const mainModal = document.getElementById('mainModal');
 const subModal = document.getElementById('subModal');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
@@ -494,7 +585,6 @@ closeMainBtn.onclick = closeMainModalFunc;
 mainModal.onclick = (e) => { if (e.target === mainModal) closeMainModalFunc(); };
 subModal.onclick = (e) => { if (e.target === subModal) closeSubModalFunc(); };
 
-// Fungsi menampilkan daftar offday dengan navigasi tanggal
 function showOffdayModal(targetDateIndex) {
   if (!masterTanggalList.length) return;
   const target = masterTanggalList[targetDateIndex];
@@ -542,7 +632,6 @@ function showOffdayModal(targetDateIndex) {
   document.getElementById('closeSubBtn').onclick = closeSubModalFunc;
 }
 
-// Fungsi menampilkan daftar cuti (membaca data "CUTI" dari sheet) dengan navigasi
 function showCutiModal(targetDateIndex) {
   if (!masterTanggalList.length) return;
   const target = masterTanggalList[targetDateIndex];
@@ -550,7 +639,6 @@ function showCutiModal(targetDateIndex) {
   const cutiStaff = [];
   for (let staff of masterStaffRows) {
     const shiftRaw = staff.shiftsByCol[colIndex] || "";
-    // Nilai cuti bisa berupa "CUTI" (case insensitive)
     if (shiftRaw.toUpperCase() === "CUTI") {
       cutiStaff.push({ nama: staff.nama, role: staff.role });
     }
@@ -624,6 +712,9 @@ function renderByCurrentIndex() {
     data[shift].sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
   });
   
+  currentDataForSearch = { PAGI: data.PAGI, MALAM: data.MALAM, OFFDAY: data.OFFDAY };
+  currentSearchTerm = "";
+  
   const renderNameList = (list) => {
     if (!list.length) return `<div class="empty-state">— Tidak ada staff —</div>`;
     return list.map(item => `<div class="name-item ${roleClass(item.role)}">${item.nama}</div>`).join('');
@@ -637,6 +728,9 @@ function renderByCurrentIndex() {
       <div class="nav-info" id="dateInfo">${currentIndex+1} / ${masterTanggalList.length}</div>
     </div>
     <div class="date-box">
+      <div class="search-container">
+        <input type="text" id="searchStaff" class="search-input" placeholder="🔍 Cari nama staff..." autocomplete="off">
+      </div>
       <div class="date-title">📅 ${tanggalFormatted}</div>
       <div class="wrapper-grid">
         <div class="shift-card">
@@ -662,6 +756,8 @@ function renderByCurrentIndex() {
   document.getElementById("prevBtn").onclick = () => navigate(-1);
   document.getElementById("nextBtn").onclick = () => navigate(1);
   document.getElementById("todayBtn").onclick = () => goToToday();
+  
+  initSearch();
 }
 
 function navigate(delta) {
