@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 <title>Jadwal Shift | Piala Dunia + Pencarian Staff</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
 
 <style>
-/* ========== TEMA PIALA DUNIA + MONYET ========== */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -20,9 +21,9 @@ body {
   color: #fff4e0;
   position: relative;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* efek garis lapangan */
 body::before {
   content: "";
   position: fixed;
@@ -36,7 +37,6 @@ body::before {
   z-index: 0;
 }
 
-/* WATERMARK MONYET BERGELANTUNGAN */
 .watermark-monkey {
   position: fixed;
   bottom: 10px;
@@ -67,17 +67,13 @@ body::before {
   100% { transform: rotate(-8deg); }
 }
 
-body::after {
-  content: "";
-  display: none;
-}
+body::after { content: ""; display: none; }
 
 #app, .main-header, .nav-container, .date-box {
   position: relative;
   z-index: 2;
 }
 
-/* HEADER dengan tombol hamburger di KIRI */
 .main-header {
   text-align: center;
   margin-bottom: 24px;
@@ -130,13 +126,360 @@ body::after {
   visibility: hidden;
 }
 
-/* MODAL OVERLAY */
-.modal-overlay {
+/* ========== REFRESH INDICATOR ========== */
+.refresh-indicator {
   position: fixed;
   top: 0;
   left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ffd700, #ff8c00, #ffd700);
+  z-index: 9999;
+  transition: width 0.3s linear;
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 8px rgba(255,215,0,0.6);
+}
+
+.refresh-indicator.animating {
+  animation: refreshPulse 2s ease-in-out;
+}
+
+@keyframes refreshPulse {
+  0% { width: 0%; opacity: 1; }
+  50% { width: 70%; opacity: 0.8; }
+  90% { width: 100%; opacity: 0.4; }
+  100% { width: 100%; opacity: 0; }
+}
+
+.last-update {
+  font-size: 11px;
+  color: rgba(255,234,175,0.6);
+  text-align: center;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ========== TOAST NOTIFICATION ========== */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  width: 90%;
+  max-width: 380px;
+}
+
+.toast {
+  background: rgba(30, 43, 28, 0.95);
+  backdrop-filter: blur(10px);
+  color: #ffeaaf;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #eab354;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  transform: translateY(-30px);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: auto;
+  text-align: center;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toast.toast-success { border-left: 4px solid #4caf50; }
+.toast.toast-info { border-left: 4px solid #2196f3; }
+.toast.toast-warning { border-left: 4px solid #ff9800; }
+.toast.toast-error { border-left: 4px solid #f44336; }
+
+/* ========== ANIMATED TRANSITIONS ========== */
+.date-box {
+  background: rgba(20, 30, 18, 0.85);
+  backdrop-filter: blur(4px);
+  border-radius: 32px;
+  padding: 20px 18px;
+  margin-bottom: 30px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(243, 179, 61, 0.6);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.date-box.slide-left { animation: slideLeft 0.3s ease; }
+.date-box.slide-right { animation: slideRight 0.3s ease; }
+
+@keyframes slideLeft {
+  0% { opacity: 0; transform: translateX(40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideRight {
+  0% { opacity: 0; transform: translateX(-40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* ========== SHIFT COUNT BADGE ========== */
+.shift-count-badge {
+  display: inline-block;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 20px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ========== SEARCH WITH CLEAR BUTTON ========== */
+.search-container {
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.search-input {
   width: 100%;
-  height: 100%;
+  padding: 12px 48px 12px 20px;
+  border-radius: 60px;
+  border: none;
+  background: #fef7e0;
+  font-size: 16px;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  outline: none;
+  text-align: center;
+  color: #1e2c1a;
+  font-weight: 500;
+}
+
+.search-input::placeholder {
+  color: #8b6b3c;
+  font-style: italic;
+}
+
+.search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #d49b2a;
+  color: #1e2c1a;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: 0.15s;
+  line-height: 1;
+}
+
+.search-clear.visible {
+  display: flex;
+}
+
+.search-clear:active {
+  transform: translateY(-50%) scale(0.9);
+  background: #b57c2c;
+  color: #fff;
+}
+
+/* ========== STAFF PROFILE CARD ========== */
+.profile-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0.25s, opacity 0.25s;
+  padding: 16px;
+}
+
+.profile-overlay.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+.profile-card {
+  background: #1f2b1c;
+  border-radius: 28px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 2px solid #eab354;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  transform: scale(0.8) translateY(30px);
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.profile-overlay.active .profile-card {
+  transform: scale(1) translateY(0);
+}
+
+.profile-header {
+  background: linear-gradient(135deg, #d49b2a, #b57c2c);
+  padding: 20px;
+  text-align: center;
+  border-radius: 26px 26px 0 0;
+  position: relative;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 10px;
+  border: 3px solid rgba(255,255,255,0.3);
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e2c1a;
+}
+
+.profile-role {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(30,44,26,0.7);
+  margin-top: 4px;
+}
+
+.profile-stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.profile-stat {
+  background: rgba(0,0,0,0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e2c1a;
+}
+
+.profile-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: rgba(0,0,0,0.3);
+  border: none;
+  color: #1e2c1a;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-body {
+  padding: 16px;
+}
+
+.profile-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #eab354;
+  margin: 12px 0 8px;
+  text-align: center;
+}
+
+.profile-schedule-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.profile-day-item {
+  padding: 8px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.profile-day-item.pd-pagi { background: #2e5a3e; color: #a8f0c0; border-left: 3px solid #4caf50; }
+.profile-day-item.pd-malam { background: #2e3a5a; color: #a8c8f0; border-left: 3px solid #5c6bc0; }
+.profile-day-item.pd-off { background: #5a3e2e; color: #f0c8a8; border-left: 3px solid #ff9800; }
+.profile-day-item.pd-cuti { background: #5a2e4a; color: #f0a8d8; border-left: 3px solid #e91e63; }
+
+.profile-day-item .pdi-date {
+  font-size: 10px;
+  opacity: 0.7;
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ========== SWIPE HINT ========== */
+.swipe-hint {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,234,175,0.4);
+  margin-top: 8px;
+  animation: swipeHintPulse 2s infinite;
+}
+
+@keyframes swipeHintPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* ========== NAME ITEM CLICKABLE ========== */
+.name-item {
+  text-align: center;
+  padding: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #3d4a33;
+  color: white;
+  font-size: 14px;
+  background-color: #263321;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.name-item:hover { filter: brightness(1.15); }
+.name-item:active { transform: scale(0.97); }
+
+/* ========== MODAL OVERLAY ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: rgba(0,0,0,0.7);
   backdrop-filter: blur(4px);
   z-index: 1000;
@@ -190,9 +533,7 @@ body::after {
   font-size: 14px;
 }
 
-.nav-modal button:active {
-  transform: scale(0.96);
-}
+.nav-modal button:active { transform: scale(0.96); }
 
 .nav-modal span {
   background: #2e3d28;
@@ -273,9 +614,7 @@ body::after {
   color: #1e3a1a;
 }
 
-.nav-btn:active {
-  transform: scale(0.97);
-}
+.nav-btn:active { transform: scale(0.97); }
 
 .nav-info {
   font-size: 14px;
@@ -287,41 +626,6 @@ body::after {
   text-align: center;
   white-space: nowrap;
   border: 1px solid #f3b33d;
-}
-
-/* search box */
-.search-container {
-  margin-bottom: 20px;
-  text-align: center;
-}
-.search-input {
-  width: 100%;
-  max-width: 350px;
-  padding: 12px 20px;
-  border-radius: 60px;
-  border: none;
-  background: #fef7e0;
-  font-size: 16px;
-  font-family: inherit;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  outline: none;
-  text-align: center;
-  color: #1e2c1a;
-  font-weight: 500;
-}
-.search-input::placeholder {
-  color: #8b6b3c;
-  font-style: italic;
-}
-
-.date-box {
-  background: rgba(20, 30, 18, 0.85);
-  backdrop-filter: blur(4px);
-  border-radius: 32px;
-  padding: 20px 18px;
-  margin-bottom: 30px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(243, 179, 61, 0.6);
 }
 
 .date-title {
@@ -386,19 +690,12 @@ body::after {
   padding: 12px;
 }
 
-.name-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.name-item {
+.empty-state {
   text-align: center;
-  padding: 12px;
-  font-weight: 600;
-  border-bottom: 1px solid #3d4a33;
-  color: white;
-  font-size: 14px;
-  background-color: #263321;
+  padding: 16px;
+  color: #d4b87a;
+  font-style: italic;
+  background: #1f2a1b;
 }
 
 .role-csline { background-color: #1f3b4c; border-left: 4px solid #ffcd7e; }
@@ -406,12 +703,11 @@ body::after {
 .role-kks { background-color: #7f5e33; border-left: 4px solid #ffcd7e; }
 .role-ks { background-color: #4a7629; color: #ffefc0; border-left: 4px solid #ffcd7e; }
 
-.empty-state {
+.keyboard-hint {
   text-align: center;
-  padding: 16px;
-  color: #d4b87a;
-  font-style: italic;
-  background: #1f2a1b;
+  font-size: 10px;
+  color: rgba(255,234,175,0.3);
+  margin-top: 4px;
 }
 
 @media (max-width: 550px) {
@@ -425,13 +721,19 @@ body::after {
   .name-item { padding: 10px; }
   .nav-btn { padding: 8px 12px; font-size: 13px; min-width: 70px; }
   .date-title { font-size: 18px; }
-  .search-input { font-size: 14px; padding: 10px 16px; }
+  .search-input { font-size: 14px; padding: 10px 44px 10px 16px; }
+  .search-clear { width: 28px; height: 28px; font-size: 14px; right: 6px; }
   .watermark-monkey { font-size: 30px; gap: 8px; bottom: 5px; }
+  .profile-schedule-grid { grid-template-columns: 1fr 1fr; gap: 4px; }
+  .keyboard-hint { display: none; }
 }
 </style>
 </head>
 
 <body>
+
+<div class="refresh-indicator" id="refreshBar"></div>
+<div class="toast-container" id="toastContainer"></div>
 
 <div class="main-header">
   <button class="menu-btn" id="hamburgerBtn">☰</button>
@@ -439,7 +741,6 @@ body::after {
   <div class="header-spacer"></div>
 </div>
 
-<!-- Watermark monyet bergelantungan -->
 <div class="watermark-monkey">
   <span>🙈</span><span>🐒</span><span>🙉</span><span>🙊</span><span>🐵</span><span>🙈</span><span>🐒</span>
 </div>
@@ -452,15 +753,19 @@ body::after {
     <h3 style="color:#ffeaaf; margin-bottom:20px;">📋 MENU</h3>
     <button class="modal-menu-btn" id="offdayMenuBtn" style="background:#d49b2a; border:none; color:#1e2c1a; font-weight:bold; font-size:18px; padding:14px; margin:12px 0; width:100%; border-radius:60px;">🚫 Daftar Staff Offday</button>
     <button class="modal-menu-btn" id="cutiMenuBtn" style="background:#d49b2a; border:none; color:#1e2c1a; font-weight:bold; font-size:18px; padding:14px; margin:12px 0; width:100%; border-radius:60px;">🌴 Daftar Staff Cuti</button>
+    <button class="modal-menu-btn" id="refreshMenuBtn" style="background:#4caf50; border:none; color:white; font-weight:bold; font-size:18px; padding:14px; margin:12px 0; width:100%; border-radius:60px;">🔄 Refresh Data</button>
     <button class="modal-menu-btn close-modal" id="closeMainModal" style="background:#3d4a33; color:#ffefc0; margin-top:10px;">Tutup</button>
   </div>
 </div>
 
-<!-- Modal untuk menampilkan daftar (offday atau cuti) dengan navigasi -->
+<!-- Modal untuk menampilkan daftar (offday atau cuti) -->
 <div id="subModal" class="modal-overlay">
-  <div id="subModalContent" class="sub-modal">
-    <!-- konten dinamis -->
-  </div>
+  <div id="subModalContent" class="sub-modal"></div>
+</div>
+
+<!-- Staff Profile Overlay -->
+<div id="profileOverlay" class="profile-overlay">
+  <div class="profile-card" id="profileCard"></div>
 </div>
 
 <script>
@@ -522,12 +827,113 @@ function formatDateIndonesia(dateObj) {
   return `${hariIndo}, ${tanggal} ${bulanIndo} ${tahun}`;
 }
 
+function formatShortDate(dateObj) {
+  if (!dateObj || isNaN(dateObj.getTime())) return "";
+  const t = dateObj.getDate();
+  const b = bulanIndonesia[dateObj.getMonth()].substring(0,3);
+  return `${t} ${b}`;
+}
+
 let masterTanggalList = [];
 let masterStaffRows = [];
 let currentIndex = -1;
 let currentDataForSearch = { PAGI: [], MALAM: [], OFFDAY: [] };
 let currentSearchTerm = "";
+let lastFetchTime = null;
+let autoRefreshInterval = null;
 
+// ======================= TOAST NOTIFICATION =======================
+function showToast(message, type = "info", duration = 2500) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  requestAnimationFrame(() => { toast.classList.add('show'); });
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, duration);
+}
+
+// ======================= REFRESH INDICATOR =======================
+function showRefreshAnimation() {
+  const bar = document.getElementById('refreshBar');
+  bar.classList.remove('animating');
+  bar.style.width = '0%';
+  void bar.offsetWidth;
+  bar.classList.add('animating');
+  setTimeout(() => {
+    bar.classList.remove('animating');
+    bar.style.width = '0%';
+  }, 2100);
+}
+
+function updateLastUpdateTime() {
+  lastFetchTime = new Date();
+  const el = document.getElementById('lastUpdateText');
+  if (el) {
+    const h = String(lastFetchTime.getHours()).padStart(2,'0');
+    const m = String(lastFetchTime.getMinutes()).padStart(2,'0');
+    el.textContent = `Terakhir update: ${h}:${m}`;
+  }
+}
+
+// ======================= AUTO REFRESH =======================
+function startAutoRefresh() {
+  if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(() => {
+    showRefreshAnimation();
+    fetchData(true);
+  }, 300000);
+}
+
+// ======================= SWIPE GESTURE =======================
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let isSwiping = false;
+
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+  isSwiping = false;
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  if (!isSwiping) {
+    const dx = Math.abs(e.changedTouches[0].screenX - touchStartX);
+    const dy = Math.abs(e.changedTouches[0].screenY - touchStartY);
+    if (dx > dy && dx > 20) isSwiping = true;
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  if (!isSwiping) return;
+  touchEndX = e.changedTouches[0].screenX;
+  const diff = touchStartX - touchEndX;
+  if (Math.abs(diff) > 60) {
+    if (diff > 0) navigate(1, 'left');
+    else navigate(-1, 'right');
+  }
+}, { passive: true });
+
+// ======================= KEYBOARD SHORTCUTS =======================
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1, 'right'); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); navigate(1, 'left'); }
+  if (e.key === 'Home' || e.key === 'h') { e.preventDefault(); goToToday(); }
+  if (e.key === 'Escape') closeAllModals();
+});
+
+function closeAllModals() {
+  document.getElementById('mainModal').classList.remove('active');
+  document.getElementById('subModal').classList.remove('active');
+  document.getElementById('profileOverlay').classList.remove('active');
+}
+
+// ======================= ROLE HELPERS =======================
 function roleClass(role) {
   if (role === "CS LINE") return "role-csline";
   if (role === "CS") return "role-cs";
@@ -536,7 +942,15 @@ function roleClass(role) {
   return "";
 }
 
-// Render daftar nama berdasarkan filter search
+function roleEmoji(role) {
+  if (role === "CS LINE") return "💻";
+  if (role === "CS") return "🎧";
+  if (role === "KKS") return "👥";
+  if (role === "KS") return "👑";
+  return "👤";
+}
+
+// ======================= SEARCH & FILTER =======================
 function renderFilteredLists() {
   const searchTerm = currentSearchTerm.toLowerCase();
   const filterList = (list) => {
@@ -546,28 +960,128 @@ function renderFilteredLists() {
   const filteredPagi = filterList(currentDataForSearch.PAGI);
   const filteredMalam = filterList(currentDataForSearch.MALAM);
   const filteredOffday = filterList(currentDataForSearch.OFFDAY);
-  
+
   const renderNameList = (list) => {
     if (!list.length) return `<div class="empty-state">${searchTerm ? "Tidak ada staff yang cocok" : "— Tidak ada staff —"}</div>`;
-    return list.map(item => `<div class="name-item ${roleClass(item.role)}">${item.nama}</div>`).join('');
+    return list.map(item => `<div class="name-item ${roleClass(item.role)}" onclick="showStaffProfile('${item.nama.replace(/'/g,"\\'")}')">${roleEmoji(item.role)} ${item.nama}</div>`).join('');
   };
-  
+
   const pagiDiv = document.querySelector('.shift-card:first-child .name-list');
   const malamDiv = document.querySelector('.shift-card:nth-child(2) .name-list');
   const offdayDiv = document.querySelector('.offday-card .name-list');
   if (pagiDiv) pagiDiv.innerHTML = renderNameList(filteredPagi);
   if (malamDiv) malamDiv.innerHTML = renderNameList(filteredMalam);
   if (offdayDiv) offdayDiv.innerHTML = renderNameList(filteredOffday);
+
+  updateShiftBadges(filteredPagi.length, filteredMalam.length, filteredOffday.length);
+}
+
+function updateShiftBadges(pagiCount, malamCount, offCount) {
+  const pb = document.getElementById('badgePagi');
+  const mb = document.getElementById('badgeMalam');
+  const ob = document.getElementById('badgeOff');
+  if (pb) pb.textContent = pagiCount;
+  if (mb) mb.textContent = malamCount;
+  if (ob) ob.textContent = off;
 }
 
 function initSearch() {
   let searchBox = document.getElementById('searchStaff');
-  if (!searchBox) return;
+  let clearBtn = document.getElementById('searchClear');
+  if (!searchBox || !clearBtn) return;
+
+  // Show/hide clear button based on input
+  const toggleClear = () => {
+    if (searchBox.value.length > 0) {
+      clearBtn.classList.add('visible');
+    } else {
+      clearBtn.classList.remove('visible');
+    }
+  };
+
   searchBox.addEventListener('input', (e) => {
     currentSearchTerm = e.target.value;
+    toggleClear();
     renderFilteredLists();
   });
+
+  clearBtn.addEventListener('click', () => {
+    searchBox.value = '';
+    currentSearchTerm = '';
+    clearBtn.classList.remove('visible');
+    renderFilteredLists();
+    searchBox.focus();
+  });
+
+  toggleClear();
 }
+
+// ======================= STAFF PROFILE =======================
+function showStaffProfile(nama) {
+  const staff = masterStaffRows.find(s => s.nama === nama);
+  if (!staff) return;
+
+  let pagiCount = 0, malamCount = 0, offCount = 0, cutiCount = 0;
+  let scheduleItems = [];
+
+  for (let tgl of masterTanggalList) {
+    const shiftRaw = (staff.shiftsByCol[tgl.colIndex] || "").toUpperCase();
+    let cls = 'pd-off';
+    let label = 'OFF';
+    if (shiftRaw === 'PAGI') { cls = 'pd-pagi'; label = '🌅 PAGI'; pagiCount++; }
+    else if (shiftRaw === 'MALAM') { cls = 'pd-malam'; label = '🌙 MALAM'; malamCount++; }
+    else if (shiftRaw === 'CUTI') { cls = 'pd-cuti'; label = '🌴 CUTI'; cutiCount++; }
+    else if (shiftRaw === 'OFFDAY') { cls = 'pd-off'; label = '🚫 OFF'; offCount++; }
+
+    scheduleItems.push({
+      dateObj: tgl.dateObj,
+      label: label,
+      cls: cls
+    });
+  }
+
+  const total = pagiCount + malamCount + offCount + cutiCount;
+
+  let scheduleHTML = scheduleItems.map(item => `
+    <div class="profile-day-item ${item.cls}">
+      <span class="pdi-date">${formatShortDate(item.dateObj)}</span>
+      ${item.label}
+    </div>
+  `).join('');
+
+  const html = `
+    <div class="profile-header">
+      <button class="profile-close" onclick="closeProfile()">✕</button>
+      <div class="profile-avatar">${roleEmoji(staff.role)}</div>
+      <div class="profile-name">${staff.nama}</div>
+      <div class="profile-role">${staff.role}</div>
+      <div class="profile-stats-row">
+        <span class="profile-stat">🌅 Pagi: ${pagiCount}</span>
+        <span class="profile-stat">🌙 Malam: ${malamCount}</span>
+        <span class="profile-stat">🚫 Off: ${offCount}</span>
+        <span class="profile-stat">🌴 Cuti: ${cutiCount}</span>
+      </div>
+    </div>
+    <div class="profile-body">
+      <div class="profile-section-title">📅 Jadwal ${total} Hari</div>
+      <div class="profile-schedule-grid">
+        ${scheduleHTML}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('profileCard').innerHTML = html;
+  document.getElementById('profileOverlay').classList.add('active');
+  showToast(`Profil: ${staff.nama}`, 'info', 1500);
+}
+
+function closeProfile() {
+  document.getElementById('profileOverlay').classList.remove('active');
+}
+
+document.getElementById('profileOverlay').onclick = (e) => {
+  if (e.target === document.getElementById('profileOverlay')) closeProfile();
+};
 
 // ======================= MENU & MODAL =======================
 const mainModal = document.getElementById('mainModal');
@@ -576,6 +1090,7 @@ const hamburgerBtn = document.getElementById('hamburgerBtn');
 const closeMainBtn = document.getElementById('closeMainModal');
 const offdayMenuBtn = document.getElementById('offdayMenuBtn');
 const cutiMenuBtn = document.getElementById('cutiMenuBtn');
+const refreshMenuBtn = document.getElementById('refreshMenuBtn');
 
 function closeMainModalFunc() { mainModal.classList.remove('active'); }
 function closeSubModalFunc() { subModal.classList.remove('active'); }
@@ -584,6 +1099,11 @@ hamburgerBtn.onclick = () => mainModal.classList.add('active');
 closeMainBtn.onclick = closeMainModalFunc;
 mainModal.onclick = (e) => { if (e.target === mainModal) closeMainModalFunc(); };
 subModal.onclick = (e) => { if (e.target === subModal) closeSubModalFunc(); };
+
+refreshMenuBtn.onclick = () => {
+  closeMainModalFunc();
+  manualRefresh();
+};
 
 function showOffdayModal(targetDateIndex) {
   if (!masterTanggalList.length) return;
@@ -610,25 +1130,17 @@ function showOffdayModal(targetDateIndex) {
     html += `<div class="empty-list">Tidak ada staff OFFDAY pada tanggal ini</div>`;
   } else {
     html += `<ul class="staff-list">`;
-    offdayStaff.forEach(s => {
-      html += `<li>${s.nama} (${s.role})</li>`;
-    });
+    offdayStaff.forEach(s => { html += `<li>${s.nama} (${s.role})</li>`; });
     html += `</ul>`;
   }
   html += `<button class="close-sub" id="closeSubBtn">Tutup</button></div>`;
   document.getElementById('subModalContent').innerHTML = html;
   subModal.classList.add('active');
-  
+
   const prevBtn = document.getElementById('offdayPrevBtn');
   const nextBtn = document.getElementById('offdayNextBtn');
-  if (prevBtn) prevBtn.onclick = () => {
-    let newIdx = targetDateIndex - 1;
-    if (newIdx >= 0) showOffdayModal(newIdx);
-  };
-  if (nextBtn) nextBtn.onclick = () => {
-    let newIdx = targetDateIndex + 1;
-    if (newIdx < masterTanggalList.length) showOffdayModal(newIdx);
-  };
+  if (prevBtn) prevBtn.onclick = () => { let n = targetDateIndex - 1; if (n >= 0) showOffdayModal(n); };
+  if (nextBtn) nextBtn.onclick = () => { let n = targetDateIndex + 1; if (n < masterTanggalList.length) showOffdayModal(n); };
   document.getElementById('closeSubBtn').onclick = closeSubModalFunc;
 }
 
@@ -657,25 +1169,17 @@ function showCutiModal(targetDateIndex) {
     html += `<div class="empty-list">Tidak ada staff CUTI pada tanggal ini</div>`;
   } else {
     html += `<ul class="staff-list">`;
-    cutiStaff.forEach(s => {
-      html += `<li>${s.nama} (${s.role})</li>`;
-    });
+    cutiStaff.forEach(s => { html += `<li>${s.nama} (${s.role})</li>`; });
     html += `</ul>`;
   }
   html += `<button class="close-sub" id="closeSubBtnCuti">Tutup</button></div>`;
   document.getElementById('subModalContent').innerHTML = html;
   subModal.classList.add('active');
-  
+
   const prevBtn = document.getElementById('cutiPrevBtn');
   const nextBtn = document.getElementById('cutiNextBtn');
-  if (prevBtn) prevBtn.onclick = () => {
-    let newIdx = targetDateIndex - 1;
-    if (newIdx >= 0) showCutiModal(newIdx);
-  };
-  if (nextBtn) nextBtn.onclick = () => {
-    let newIdx = targetDateIndex + 1;
-    if (newIdx < masterTanggalList.length) showCutiModal(newIdx);
-  };
+  if (prevBtn) prevBtn.onclick = () => { let n = targetDateIndex - 1; if (n >= 0) showCutiModal(n); };
+  if (nextBtn) nextBtn.onclick = () => { let n = targetDateIndex + 1; if (n < masterTanggalList.length) showCutiModal(n); };
   document.getElementById('closeSubBtnCuti').onclick = closeSubModalFunc;
 }
 
@@ -689,17 +1193,17 @@ cutiMenuBtn.onclick = () => {
 };
 
 // ======================= RENDER JADWAL UTAMA =======================
-function renderByCurrentIndex() {
+function renderByCurrentIndex(direction) {
   if (!masterTanggalList.length || currentIndex < 0 || currentIndex >= masterTanggalList.length) {
     document.getElementById("app").innerHTML = `<div style="background:#fff3cd; padding:16px; border-radius:20px;">⚠️ Data tanggal tidak valid.</div>`;
     return;
   }
-  
+
   const target = masterTanggalList[currentIndex];
   const dateObj = target.dateObj;
   const colIndex = target.colIndex;
   const tanggalFormatted = formatDateIndonesia(dateObj);
-  
+
   const data = { PAGI: [], MALAM: [], OFFDAY: [] };
   for (let staff of masterStaffRows) {
     const shiftRaw = staff.shiftsByCol[colIndex] || "";
@@ -711,15 +1215,17 @@ function renderByCurrentIndex() {
   Object.keys(data).forEach(shift => {
     data[shift].sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role));
   });
-  
+
   currentDataForSearch = { PAGI: data.PAGI, MALAM: data.MALAM, OFFDAY: data.OFFDAY };
   currentSearchTerm = "";
-  
+
   const renderNameList = (list) => {
     if (!list.length) return `<div class="empty-state">— Tidak ada staff —</div>`;
-    return list.map(item => `<div class="name-item ${roleClass(item.role)}">${item.nama}</div>`).join('');
+    return list.map(item => `<div class="name-item ${roleClass(item.role)}" onclick="showStaffProfile('${item.nama.replace(/'/g,"\\'")}')">${roleEmoji(item.role)} ${item.nama}</div>`).join('');
   };
-  
+
+  const animClass = direction === 'left' ? 'slide-left' : direction === 'right' ? 'slide-right' : '';
+
   const html = `
     <div class="nav-container">
       <button class="nav-btn" id="prevBtn">◀ Sebelumnya</button>
@@ -727,44 +1233,52 @@ function renderByCurrentIndex() {
       <button class="nav-btn" id="nextBtn">Berikutnya ▶</button>
       <div class="nav-info" id="dateInfo">${currentIndex+1} / ${masterTanggalList.length}</div>
     </div>
-    <div class="date-box">
+    <div class="date-box ${animClass}">
       <div class="search-container">
         <input type="text" id="searchStaff" class="search-input" placeholder="🔍 Cari nama staff..." autocomplete="off">
+        <button class="search-clear" id="searchClear" title="Hapus pencarian">✕</button>
       </div>
       <div class="date-title">📅 ${tanggalFormatted}</div>
       <div class="wrapper-grid">
         <div class="shift-card">
-          <div class="shift-header">🌅 SHIFT PAGI</div>
+          <div class="shift-header">🌅 SHIFT PAGI <span class="shift-count-badge" id="badgePagi">${data.PAGI.length}</span></div>
           <div class="jam-block">07:45 - 19:45</div>
           <div class="name-list">${renderNameList(data.PAGI)}</div>
         </div>
         <div class="shift-card">
-          <div class="shift-header">🌙 SHIFT MALAM</div>
+          <div class="shift-header">🌙 SHIFT MALAM <span class="shift-count-badge" id="badgeMalam">${data.MALAM.length}</span></div>
           <div class="jam-block">19:45 - 07:45</div>
           <div class="name-list">${renderNameList(data.MALAM)}</div>
         </div>
       </div>
       <div class="shift-card offday-card">
-        <div class="offday-header">🚫 OFFDAY / LIBUR</div>
+        <div class="offday-header">🚫 OFFDAY / LIBUR <span class="shift-count-badge" id="badgeOff" style="background:rgba(255,255,255,0.2);">${data.OFFDAY.length}</span></div>
         <div class="name-list">${renderNameList(data.OFFDAY)}</div>
       </div>
+      <div class="swipe-hint">👈 Geser untuk navigasi 👉</div>
+      <div class="keyboard-hint">⌨️ Arrow Keys: Navigasi | H: Hari Ini | Esc: Tutup</div>
     </div>
+    <div class="last-update" id="lastUpdateText"></div>
   `;
-  
+
   document.getElementById("app").innerHTML = html;
-  
-  document.getElementById("prevBtn").onclick = () => navigate(-1);
-  document.getElementById("nextBtn").onclick = () => navigate(1);
+  updateLastUpdateTime();
+
+  document.getElementById("prevBtn").onclick = () => navigate(-1, 'right');
+  document.getElementById("nextBtn").onclick = () => navigate(1, 'left');
   document.getElementById("todayBtn").onclick = () => goToToday();
-  
+
   initSearch();
 }
 
-function navigate(delta) {
+function navigate(delta, direction) {
   let newIndex = currentIndex + delta;
   if (newIndex >= 0 && newIndex < masterTanggalList.length) {
     currentIndex = newIndex;
-    renderByCurrentIndex();
+    const dir = direction || (delta > 0 ? 'left' : 'right');
+    renderByCurrentIndex(dir);
+  } else {
+    showToast(delta > 0 ? "Sudah tanggal terakhir" : "Sudah tanggal pertama", "warning", 1500);
   }
 }
 
@@ -780,6 +1294,7 @@ function goToToday() {
   if (foundIdx !== -1) {
     currentIndex = foundIdx;
     renderByCurrentIndex();
+    showToast("📅 Kembali ke hari ini", "success", 1500);
   } else {
     let closestIdx = 0;
     let minDiff = Math.abs(masterTanggalList[0].dateObj - todayDate);
@@ -789,116 +1304,138 @@ function goToToday() {
     }
     currentIndex = closestIdx;
     renderByCurrentIndex();
+    showToast("📅 Tanggal terdekat dari hari ini", "info", 1500);
   }
 }
 
-// FETCH DATA
-fetch(url)
-  .then(res => res.text())
-  .then(text => {
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    const rows = json.table.rows;
-    
-    function getCell(r, c) {
-      const cell = rows[r]?.c[c];
-      if (!cell) return "";
-      let value = "";
-      if (cell.f !== undefined && cell.f !== null) value = cell.f;
-      else if (cell.v !== undefined && cell.v !== null) value = cell.v;
-      else value = "";
-      return String(value).trim();
-    }
-    
-    let tanggalRowIndex = -1;
-    for (let r = 0; r <= Math.min(4, rows.length-1); r++) {
-      let found = false;
+// ======================= MANUAL REFRESH =======================
+function manualRefresh() {
+  showRefreshAnimation();
+  showToast("🔄 Memperbarui data...", "info", 1500);
+  fetchData(true);
+}
+
+// ======================= FETCH DATA =======================
+function fetchData(isRefresh) {
+  fetch(url)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows;
+
+      function getCell(r, c) {
+        const cell = rows[r]?.c[c];
+        if (!cell) return "";
+        let value = "";
+        if (cell.f !== undefined && cell.f !== null) value = cell.f;
+        else if (cell.v !== undefined && cell.v !== null) value = cell.v;
+        else value = "";
+        return String(value).trim();
+      }
+
+      let tanggalRowIndex = -1;
+      for (let r = 0; r <= Math.min(4, rows.length-1); r++) {
+        let found = false;
+        for (let col = 4; col <= 27; col++) {
+          const val = getCell(r, col);
+          if (val && (val.includes("Date") || val.match(/\d/) || val.includes("/") || val.includes("-") || val.includes(","))) {
+            found = true;
+            break;
+          }
+        }
+        if (found) { tanggalRowIndex = r; break; }
+      }
+      if (tanggalRowIndex === -1) {
+        document.getElementById("app").innerHTML = `<div style="background:#fff3cd; padding:16px;">⚠️ Tidak menemukan baris tanggal.</div>`;
+        return;
+      }
+
+      let startRow = 5;
+      for (let r = 3; r <= 40; r++) {
+        const namaTest = getCell(r, 1);
+        if (namaTest && namaTest.length > 0) { startRow = r; break; }
+      }
+      let endRow = startRow;
+      for (let r = startRow; r <= Math.min(100, rows.length-1); r++) {
+        const nama = getCell(r, 1);
+        if (nama && nama.length > 0) endRow = r;
+        else {
+          let emptyCount = 0;
+          for (let i = r; i <= Math.min(r+2, rows.length-1); i++) {
+            if (!getCell(i,1)) emptyCount++;
+          }
+          if (emptyCount >= 3) break;
+        }
+      }
+
+      const tanggalList = [];
       for (let col = 4; col <= 27; col++) {
-        const val = getCell(r, col);
-        if (val && (val.includes("Date") || val.match(/\d/) || val.includes("/") || val.includes("-") || val.includes(","))) {
+        const raw = getCell(tanggalRowIndex, col);
+        if (!raw) continue;
+        const dateObj = parseDateFromRaw(raw);
+        if (dateObj && !isNaN(dateObj.getTime())) {
+          tanggalList.push({ dateObj, colIndex: col });
+        }
+      }
+      tanggalList.sort((a,b) => a.dateObj - b.dateObj);
+      if (tanggalList.length === 0) {
+        document.getElementById("app").innerHTML = `<div style="background:#fff3cd; padding:16px;">⚠️ Tidak ada tanggal valid di sheet.</div>`;
+        return;
+      }
+      masterTanggalList = tanggalList;
+
+      const staffData = [];
+      for (let row = startRow; row <= endRow; row++) {
+        const nama = getCell(row, 1);
+        if (!nama) continue;
+        const role = getCell(row, 3).toUpperCase();
+        const shiftsMap = {};
+        for (let col = 4; col <= 27; col++) {
+          shiftsMap[col] = getCell(row, col);
+        }
+        staffData.push({ nama, role, shiftsByCol: shiftsMap });
+      }
+      masterStaffRows = staffData;
+
+      const today = getTodayLocalDate();
+      let defaultIdx = 0;
+      let found = false;
+      for (let i = 0; i < masterTanggalList.length; i++) {
+        if (masterTanggalList[i].dateObj.getTime() === today.getTime()) {
+          defaultIdx = i;
           found = true;
           break;
         }
       }
-      if (found) { tanggalRowIndex = r; break; }
-    }
-    if (tanggalRowIndex === -1) {
-      document.getElementById("app").innerHTML = `<div style="background:#fff3cd; padding:16px;">⚠️ Tidak menemukan baris tanggal.</div>`;
-      return;
-    }
-    
-    let startRow = 5;
-    for (let r = 3; r <= 40; r++) {
-      const namaTest = getCell(r, 1);
-      if (namaTest && namaTest.length > 0) { startRow = r; break; }
-    }
-    let endRow = startRow;
-    for (let r = startRow; r <= Math.min(100, rows.length-1); r++) {
-      const nama = getCell(r, 1);
-      if (nama && nama.length > 0) endRow = r;
-      else {
-        let emptyCount = 0;
-        for (let i = r; i <= Math.min(r+2, rows.length-1); i++) {
-          if (!getCell(i,1)) emptyCount++;
+      if (!found && masterTanggalList.length) {
+        let closest = 0;
+        let minDiff = Math.abs(masterTanggalList[0].dateObj - today);
+        for (let i = 1; i < masterTanggalList.length; i++) {
+          const diff = Math.abs(masterTanggalList[i].dateObj - today);
+          if (diff < minDiff) { minDiff = diff; closest = i; }
         }
-        if (emptyCount >= 3) break;
+        defaultIdx = closest;
       }
-    }
-    
-    const tanggalList = [];
-    for (let col = 4; col <= 27; col++) {
-      const raw = getCell(tanggalRowIndex, col);
-      if (!raw) continue;
-      const dateObj = parseDateFromRaw(raw);
-      if (dateObj && !isNaN(dateObj.getTime())) {
-        tanggalList.push({ dateObj, colIndex: col });
+
+      if (currentIndex === -1) {
+        currentIndex = defaultIdx;
       }
-    }
-    tanggalList.sort((a,b) => a.dateObj - b.dateObj);
-    if (tanggalList.length === 0) {
-      document.getElementById("app").innerHTML = `<div style="background:#fff3cd; padding:16px;">⚠️ Tidak ada tanggal valid di sheet.</div>`;
-      return;
-    }
-    masterTanggalList = tanggalList;
-    
-    const staffData = [];
-    for (let row = startRow; row <= endRow; row++) {
-      const nama = getCell(row, 1);
-      if (!nama) continue;
-      const role = getCell(row, 3).toUpperCase();
-      const shiftsMap = {};
-      for (let col = 4; col <= 27; col++) {
-        shiftsMap[col] = getCell(row, col);
+
+      renderByCurrentIndex();
+
+      if (isRefresh) {
+        showToast("✅ Data berhasil diperbarui", "success", 2000);
       }
-      staffData.push({ nama, role, shiftsByCol: shiftsMap });
-    }
-    masterStaffRows = staffData;
-    
-    const today = getTodayLocalDate();
-    let defaultIdx = 0;
-    let found = false;
-    for (let i = 0; i < masterTanggalList.length; i++) {
-      if (masterTanggalList[i].dateObj.getTime() === today.getTime()) {
-        defaultIdx = i;
-        found = true;
-        break;
-      }
-    }
-    if (!found && masterTanggalList.length) {
-      let closest = 0;
-      let minDiff = Math.abs(masterTanggalList[0].dateObj - today);
-      for (let i = 1; i < masterTanggalList.length; i++) {
-        const diff = Math.abs(masterTanggalList[i].dateObj - today);
-        if (diff < minDiff) { minDiff = diff; closest = i; }
-      }
-      defaultIdx = closest;
-    }
-    currentIndex = defaultIdx;
-    renderByCurrentIndex();
-  })
-  .catch(err => {
-    document.getElementById("app").innerHTML = `<div style="background:#f8d7da; padding:16px; border-radius:20px;">❌ Gagal memuat data: ${err.message}</div>`;
-    console.error(err);
-  });
+    })
+    .catch(err => {
+      document.getElementById("app").innerHTML = `<div style="background:#f8d7da; padding:16px; border-radius:20px;">❌ Gagal memuat data: ${err.message}</div>`;
+      console.error(err);
+      if (isRefresh) showToast("❌ Gagal memperbarui data", "error", 3000);
+    });
+}
+
+fetchData(false);
+startAutoRefresh();
 </script>
 </body>
 </html>
