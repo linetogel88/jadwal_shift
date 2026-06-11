@@ -225,18 +225,49 @@ body::after { content: ""; display: none; }
   100% { opacity: 1; transform: translateX(0); }
 }
 
-/* ========== SHIFT COUNT BADGE ========== */
-.shift-count-badge {
-  display: inline-block;
-  background: rgba(0,0,0,0.4);
-  color: #fff;
+/* ========== SHIFT SUMMARY ROW ========== */
+.shift-summary {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.shift-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.35);
+  padding: 6px 14px;
+  border-radius: 40px;
   font-size: 13px;
   font-weight: 700;
-  padding: 2px 10px;
-  border-radius: 20px;
-  margin-left: 6px;
-  vertical-align: middle;
+  border: 1px solid rgba(234,179,84,0.3);
 }
+
+.shift-summary-item .ssi-icon {
+  font-size: 14px;
+}
+
+.shift-summary-item .ssi-count {
+  color: #ffd700;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.shift-summary-item .ssi-label {
+  color: #d4b87a;
+}
+
+.ssi-pagi { border-left: 3px solid #4caf50; }
+.ssi-pagi .ssi-count { color: #66bb6a; }
+
+.ssi-malam { border-left: 3px solid #5c6bc0; }
+.ssi-malam .ssi-count { color: #7986cb; }
+
+.ssi-off { border-left: 3px solid #ff9800; }
+.ssi-off .ssi-count { color: #ffa726; }
 
 /* ========== SEARCH WITH CLEAR BUTTON ========== */
 .search-container {
@@ -633,7 +664,7 @@ body::after { content: ""; display: none; }
   font-size: 22px;
   font-weight: 800;
   color: #ffeaaf;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   background: rgba(0,0,0,0.4);
   padding: 12px 0;
   border-radius: 60px;
@@ -726,6 +757,9 @@ body::after { content: ""; display: none; }
   .watermark-monkey { font-size: 30px; gap: 8px; bottom: 5px; }
   .profile-schedule-grid { grid-template-columns: 1fr 1fr; gap: 4px; }
   .keyboard-hint { display: none; }
+  .shift-summary { gap: 8px; }
+  .shift-summary-item { padding: 5px 10px; font-size: 12px; }
+  .shift-summary-item .ssi-count { font-size: 13px; }
 }
 </style>
 </head>
@@ -973,16 +1007,16 @@ function renderFilteredLists() {
   if (malamDiv) malamDiv.innerHTML = renderNameList(filteredMalam);
   if (offdayDiv) offdayDiv.innerHTML = renderNameList(filteredOffday);
 
-  updateShiftBadges(filteredPagi.length, filteredMalam.length, filteredOffday.length);
+  updateShiftSummary(filteredPagi.length, filteredMalam.length, filteredOffday.length);
 }
 
-function updateShiftBadges(pagiCount, malamCount, offCount) {
-  const pb = document.getElementById('badgePagi');
-  const mb = document.getElementById('badgeMalam');
-  const ob = document.getElementById('badgeOff');
-  if (pb) pb.textContent = pagiCount;
-  if (mb) mb.textContent = malamCount;
-  if (ob) ob.textContent = off;
+function updateShiftSummary(pagiCount, malamCount, offCount) {
+  const pc = document.getElementById('ssiPagiCount');
+  const mc = document.getElementById('ssiMalamCount');
+  const oc = document.getElementById('ssiOffCount');
+  if (pc) pc.textContent = pagiCount;
+  if (mc) mc.textContent = malamCount;
+  if (oc) oc.textContent = offCount;
 }
 
 function initSearch() {
@@ -990,7 +1024,6 @@ function initSearch() {
   let clearBtn = document.getElementById('searchClear');
   if (!searchBox || !clearBtn) return;
 
-  // Show/hide clear button based on input
   const toggleClear = () => {
     if (searchBox.value.length > 0) {
       clearBtn.classList.add('visible');
@@ -1239,20 +1272,37 @@ function renderByCurrentIndex(direction) {
         <button class="search-clear" id="searchClear" title="Hapus pencarian">✕</button>
       </div>
       <div class="date-title">📅 ${tanggalFormatted}</div>
+      <div class="shift-summary">
+        <div class="shift-summary-item ssi-pagi">
+          <span class="ssi-icon">🌅</span>
+          <span class="ssi-count" id="ssiPagiCount">${data.PAGI.length}</span>
+          <span class="ssi-label">Pagi</span>
+        </div>
+        <div class="shift-summary-item ssi-malam">
+          <span class="ssi-icon">🌙</span>
+          <span class="ssi-count" id="ssiMalamCount">${data.MALAM.length}</span>
+          <span class="ssi-label">Malam</span>
+        </div>
+        <div class="shift-summary-item ssi-off">
+          <span class="ssi-icon">🚫</span>
+          <span class="ssi-count" id="ssiOffCount">${data.OFFDAY.length}</span>
+          <span class="ssi-label">Off</span>
+        </div>
+      </div>
       <div class="wrapper-grid">
         <div class="shift-card">
-          <div class="shift-header">🌅 SHIFT PAGI <span class="shift-count-badge" id="badgePagi">${data.PAGI.length}</span></div>
+          <div class="shift-header">🌅 SHIFT PAGI</div>
           <div class="jam-block">07:45 - 19:45</div>
           <div class="name-list">${renderNameList(data.PAGI)}</div>
         </div>
         <div class="shift-card">
-          <div class="shift-header">🌙 SHIFT MALAM <span class="shift-count-badge" id="badgeMalam">${data.MALAM.length}</span></div>
+          <div class="shift-header">🌙 SHIFT MALAM</div>
           <div class="jam-block">19:45 - 07:45</div>
           <div class="name-list">${renderNameList(data.MALAM)}</div>
         </div>
       </div>
       <div class="shift-card offday-card">
-        <div class="offday-header">🚫 OFFDAY / LIBUR <span class="shift-count-badge" id="badgeOff" style="background:rgba(255,255,255,0.2);">${data.OFFDAY.length}</span></div>
+        <div class="offday-header">🚫 OFFDAY / LIBUR</div>
         <div class="name-list">${renderNameList(data.OFFDAY)}</div>
       </div>
       <div class="swipe-hint">👈 Geser untuk navigasi 👉</div>
