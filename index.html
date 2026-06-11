@@ -127,6 +127,55 @@ body::before {
   opacity: 0.8;
 }
 
+/* Foto staff di atas kolom pencarian - JEDAG-JEDUG / BERDENYUT */
+.staff-photo-container {
+  text-align: center;
+  margin-bottom: 20px;
+  animation: fadePhoto 0.5s ease;
+}
+@keyframes fadePhoto {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.staff-photo {
+  width: 95px;
+  height: 95px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #ffd966;
+  background: #2e3d28;
+  padding: 4px;
+  /* ANIMASI JEDAG-JEDUG (BERDENYUT SEPERTI DETAK JANTUNG) */
+  animation: beat 0.45s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+@keyframes beat {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+  }
+  35% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 12px rgba(255, 215, 0, 0.2);
+  }
+  70% {
+    transform: scale(0.98);
+    box-shadow: 0 0 0 5px rgba(255, 215, 0, 0.1);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+  }
+}
+/* Efek hover tetap ringan */
+.staff-photo:hover {
+  animation-play-state: paused;
+  transform: scale(1.05);
+  filter: brightness(1.05);
+  transition: 0.2s;
+}
+
 .main-header {
   text-align: center;
   margin-bottom: 24px;
@@ -562,6 +611,7 @@ body::before {
   .shift-summary-item .ssi-count { font-size: 13px; }
   .loading-img { width: 100px; height: 100px; }
   .loading-text { font-size: 16px; }
+  .staff-photo { width: 70px; height: 70px; }
 }
 </style>
 </head>
@@ -581,7 +631,6 @@ body::before {
 </div>
 
 <div id="app">
-  <!-- Loading awal akan diganti oleh fetchData, namun kita tetap tampilkan foto langsung -->
   <div class="loading-screen">
     <img src="https://i.postimg.cc/L59kGD42/display-Picture-1768727286885-276756884.png" alt="Staff Avatar" class="loading-img" loading="eager">
     <div class="loading-text">⏳ Memuat jadwal Piala Dunia...</div>
@@ -613,7 +662,6 @@ const SHEET_ID = "1PF5foBN9USoU7XBct6u4uOObUdnH30c1MPoKzHuhv6w";
 const GID = "0";
 const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 const roleOrder = ["CS LINE", "CS", "KKS", "KS"];
-const hariInggris = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 const hariIndonesia = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 const bulanInggris = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 const bulanIndonesia = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -626,26 +674,13 @@ let currentSearchTerm = "";
 let lastFetchTime = null;
 let autoRefreshInterval = null;
 
-// ========== LOADING SCREEN DENGAN FOTO ==========
-function showLoadingScreen(message = "Memuat jadwal Piala Dunia...") {
-  const appDiv = document.getElementById("app");
-  if (!appDiv) return;
-  appDiv.innerHTML = `
-    <div class="loading-screen">
-      <img src="https://i.postimg.cc/L59kGD42/display-Picture-1768727286885-276756884.png" alt="Loading Avatar" class="loading-img" loading="eager">
-      <div class="loading-text">⏳ ${message}</div>
-      <div class="loading-sub">🏆 Update data dari server</div>
-    </div>
-  `;
-}
-
 function showToast(message, type = "info", duration = 2500) {
   const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
   container.appendChild(toast);
-  requestAnimationFrame(() => { toast.classList.add('show'); });
+  requestAnimationFrame(() => toast.classList.add('show'));
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 400);
@@ -822,7 +857,9 @@ function renderByCurrentIndex(direction) {
   currentSearchTerm = "";
   const renderNameList = (list) => list.length ? list.map(item => `<div class="name-item ${roleClass(item.role)}" onclick="showStaffProfile('${item.nama.replace(/'/g,"\\'")}')">${roleEmoji(item.role)} ${item.nama}</div>`).join('') : `<div class="empty-state">— Tidak ada staff —</div>`;
   const animClass = direction === 'left' ? 'slide-left' : direction === 'right' ? 'slide-right' : '';
-  const html = `<div class="nav-container"><button class="nav-btn" id="prevBtn">◀ Sebelumnya</button><button class="nav-btn today-btn" id="todayBtn">📅 Hari Ini</button><button class="nav-btn" id="nextBtn">Berikutnya ▶</button><div class="nav-info" id="dateInfo">${currentIndex+1} / ${masterTanggalList.length}</div></div><div class="date-box ${animClass}"><div class="search-container"><input type="text" id="searchStaff" class="search-input" placeholder="🔍 Cari nama staff..." autocomplete="off"><button class="search-clear" id="searchClear" title="Hapus pencarian">✕</button></div><div class="date-title">📅 ${tanggalFormatted}</div><div class="shift-summary"><div class="shift-summary-item ssi-pagi"><span class="ssi-icon">🌅</span><span class="ssi-count" id="ssiPagiCount">${data.PAGI.length}</span><span class="ssi-label">Pagi</span></div><div class="shift-summary-item ssi-malam"><span class="ssi-icon">🌙</span><span class="ssi-count" id="ssiMalamCount">${data.MALAM.length}</span><span class="ssi-label">Malam</span></div><div class="shift-summary-item ssi-off"><span class="ssi-icon">🚫</span><span class="ssi-count" id="ssiOffCount">${data.OFFDAY.length}</span><span class="ssi-label">Off</span></div></div><div class="wrapper-grid"><div class="shift-card"><div class="shift-header">🌅 SHIFT PAGI</div><div class="jam-block">07:45 - 19:45</div><div class="name-list">${renderNameList(data.PAGI)}</div></div><div class="shift-card"><div class="shift-header">🌙 SHIFT MALAM</div><div class="jam-block">19:45 - 07:45</div><div class="name-list">${renderNameList(data.MALAM)}</div></div></div><div class="shift-card offday-card"><div class="offday-header">🚫 OFFDAY / LIBUR</div><div class="name-list">${renderNameList(data.OFFDAY)}</div></div><div class="swipe-hint">👈 Geser untuk navigasi 👉</div><div class="keyboard-hint">⌨️ Arrow Keys: Navigasi | H: Hari Ini | Esc: Tutup</div></div><div class="last-update" id="lastUpdateText"></div>`;
+  // Foto dengan animasi jedag-jedug (tanpa caption)
+  const photoHTML = `<div class="staff-photo-container"><img src="https://i.postimg.cc/L59kGD42/display-Picture-1768727286885-276756884.png" alt="Foto Staff" class="staff-photo" loading="eager"></div>`;
+  const html = `<div class="nav-container"><button class="nav-btn" id="prevBtn">◀ Sebelumnya</button><button class="nav-btn today-btn" id="todayBtn">📅 Hari Ini</button><button class="nav-btn" id="nextBtn">Berikutnya ▶</button><div class="nav-info" id="dateInfo">${currentIndex+1} / ${masterTanggalList.length}</div></div><div class="date-box ${animClass}">${photoHTML}<div class="search-container"><input type="text" id="searchStaff" class="search-input" placeholder="🔍 Cari nama staff..." autocomplete="off"><button class="search-clear" id="searchClear" title="Hapus pencarian">✕</button></div><div class="date-title">📅 ${tanggalFormatted}</div><div class="shift-summary"><div class="shift-summary-item ssi-pagi"><span class="ssi-icon">🌅</span><span class="ssi-count" id="ssiPagiCount">${data.PAGI.length}</span><span class="ssi-label">Pagi</span></div><div class="shift-summary-item ssi-malam"><span class="ssi-icon">🌙</span><span class="ssi-count" id="ssiMalamCount">${data.MALAM.length}</span><span class="ssi-label">Malam</span></div><div class="shift-summary-item ssi-off"><span class="ssi-icon">🚫</span><span class="ssi-count" id="ssiOffCount">${data.OFFDAY.length}</span><span class="ssi-label">Off</span></div></div><div class="wrapper-grid"><div class="shift-card"><div class="shift-header">🌅 SHIFT PAGI</div><div class="jam-block">07:45 - 19:45</div><div class="name-list">${renderNameList(data.PAGI)}</div></div><div class="shift-card"><div class="shift-header">🌙 SHIFT MALAM</div><div class="jam-block">19:45 - 07:45</div><div class="name-list">${renderNameList(data.MALAM)}</div></div></div><div class="shift-card offday-card"><div class="offday-header">🚫 OFFDAY / LIBUR</div><div class="name-list">${renderNameList(data.OFFDAY)}</div></div><div class="swipe-hint">👈 Geser untuk navigasi 👉</div><div class="keyboard-hint">⌨️ Arrow Keys: Navigasi | H: Hari Ini | Esc: Tutup</div></div><div class="last-update" id="lastUpdateText"></div>`;
   document.getElementById("app").innerHTML = html;
   updateLastUpdateTime();
   document.getElementById("prevBtn").onclick = () => navigate(-1, 'right');
@@ -844,7 +881,8 @@ function goToToday() {
 function manualRefresh() { showRefreshAnimation(); showToast("🔄 Memperbarui data...", "info", 1500); fetchData(true); }
 
 function fetchData(isRefresh) {
-  showLoadingScreen(isRefresh ? "Memperbarui data jadwal..." : "Memuat jadwal Piala Dunia...");
+  const loadingMsg = isRefresh ? "Memperbarui data jadwal..." : "Memuat jadwal Piala Dunia...";
+  document.getElementById("app").innerHTML = `<div class="loading-screen"><img src="https://i.postimg.cc/L59kGD42/display-Picture-1768727286885-276756884.png" alt="Staff Avatar" class="loading-img"><div class="loading-text">⏳ ${loadingMsg}</div><div class="loading-sub">🏆 Update dari server</div></div>`;
   fetch(url).then(res => res.text()).then(text => {
     const json = JSON.parse(text.substring(47).slice(0, -2));
     const rows = json.table.rows;
