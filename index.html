@@ -240,7 +240,7 @@ body::before {
 
 <div id="app">
   <div class="loading-screen">
-    <img src="https://i.postimg.cc/WbCVVYqR/Chat-GPT-Image-Jun-26-2026-07-14-36-PM.png" alt="Staff Avatar" class="loading-img" loading="eager">
+    <img src="https://i.postimg.cc/NM92yvqn/2.png" alt="Staff Avatar" class="loading-img" loading="eager">
     <div class="loading-text">⏳ Memuat jadwal Piala Dunia...</div>
     <div class="loading-sub">🏆 Menyusun data shift terbaru</div>
   </div>
@@ -447,7 +447,7 @@ function renderByCurrentIndex(direction) {
   
   const renderNameList = (list) => list.length ? list.map(item => `<div class="name-item ${roleClass(item.role)}" onclick="showStaffProfile('${item.nama.replace(/'/g,"\\'")}')">${roleEmoji(item.role)} ${item.nama}</div>`).join('') : `<div class="empty-state">— Tidak ada staff —</div>`;
   const animClass = direction === 'left' ? 'slide-left' : direction === 'right' ? 'slide-right' : '';
-  const photoHTML = `<div class="staff-photo-container"><img src="https://i.postimg.cc/WbCVVYqR/Chat-GPT-Image-Jun-26-2026-07-14-36-PM.png" alt="Foto Staff" class="staff-photo" loading="eager"></div>`;
+  const photoHTML = `<div class="staff-photo-container"><img src="https://i.postimg.cc/NM92yvqn/2.png" alt="Foto Staff" class="staff-photo" loading="eager"></div>`;
   
   const noScheduleHTML = `
     <div class="no-schedule-box" id="noScheduleBox" style="${isAllEmpty ? '' : 'display:none;'}">
@@ -523,7 +523,7 @@ function manualRefresh() { showRefreshAnimation(); showToast("🔄 Memperbarui d
 
 function fetchData(isRefresh) {
   const loadingMsg = isRefresh ? "Memperbarui data jadwal..." : "Memuat jadwal Piala Dunia...";
-  document.getElementById("app").innerHTML = `<div class="loading-screen"><img src="https://i.postimg.cc/WbCVVYqR/Chat-GPT-Image-Jun-26-2026-07-14-36-PM.png" alt="Staff Avatar" class="loading-img"><div class="loading-text">⏳ ${loadingMsg}</div><div class="loading-sub">🏆 Update dari server</div></div>`;
+  document.getElementById("app").innerHTML = `<div class="loading-screen"><img src="https://i.postimg.cc/NM92yvqn/2.png" alt="Staff Avatar" class="loading-img"><div class="loading-text">⏳ ${loadingMsg}</div><div class="loading-sub">🏆 Update dari server</div></div>`;
   fetch(url).then(res => res.text()).then(text => {
     const json = JSON.parse(text.substring(47).slice(0, -2));
     const rows = json.table.rows;
