@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
 <title>Jadwal Shift | Piala Dunia + Pencarian Staff</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇮🇩</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇮🇩</text></svg>">
 
 <style>
 * {
@@ -296,7 +296,7 @@ body::after {
 
 .main-header {
   overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, #ffffff 48%, #d71920 48%, #a90710 100%);
+  background: linear-gradient(180deg, #d71920 0%, #a90710 50%, #ffffff 50%, #f7eeee 100%);
   border: 1px solid rgba(255,255,255,0.88);
   border-bottom: 2px solid rgba(255,255,255,0.92);
   box-shadow: 0 14px 34px rgba(46,0,4,0.46), inset 0 1px 0 rgba(255,255,255,0.9);
@@ -676,7 +676,7 @@ body::after {
 
 <div class="main-header">
   <button class="menu-btn" id="hamburgerBtn">☰</button>
-  <h1>🏆 JADWAL SHIFT LINETOGEL 🏆</h1>
+  <h1>🇮🇩 JADWAL SHIFT LINETOGEL 🇮🇩</h1>
   <div class="header-spacer"></div>
 </div>
 
@@ -687,8 +687,8 @@ body::after {
 <div id="app">
   <div class="loading-screen">
     <img src="https://i.postimg.cc/NM92yvqn/2.png" alt="Staff Avatar" class="loading-img" loading="eager">
-    <div class="loading-text">⏳ Memuat jadwal Piala Dunia...</div>
-    <div class="loading-sub">🏆 Menyusun data shift terbaru</div>
+    <div class="loading-text">⏳ Memuat jadwal 17 Agustus...</div>
+    <div class="loading-sub">🇮🇩 Menyusun data shift terbaru</div>
   </div>
 </div>
 
@@ -969,7 +969,7 @@ function manualRefresh() { showRefreshAnimation(); showToast("🔄 Memperbarui d
 
 function fetchData(isRefresh) {
   const loadingMsg = isRefresh ? "Memperbarui data jadwal..." : "Memuat jadwal Piala Dunia...";
-  document.getElementById("app").innerHTML = `<div class="loading-screen"><img src="https://i.postimg.cc/NM92yvqn/2.png" alt="Staff Avatar" class="loading-img"><div class="loading-text">⏳ ${loadingMsg}</div><div class="loading-sub">🏆 Update dari server</div></div>`;
+  document.getElementById("app").innerHTML = `<div class="loading-screen"><img src="https://i.postimg.cc/NM92yvqn/2.png" alt="Staff Avatar" class="loading-img"><div class="loading-text">⏳ ${loadingMsg}</div><div class="loading-sub">🇮🇩 Update dari server</div></div>`;
   fetch(url).then(res => res.text()).then(text => {
     const json = JSON.parse(text.substring(47).slice(0, -2));
     const rows = json.table.rows;
