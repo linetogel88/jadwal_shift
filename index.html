@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-<title>Jadwal Shift</title>
+<title>Jadwal Shift | Piala Dunia + Pencarian Staff</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
 
@@ -592,6 +592,81 @@ body::after {
   }
 }
 
+
+.staff-banner-container {
+  text-align: center;
+  margin: 8px auto 20px;
+  animation: fadePhoto 0.5s ease;
+  display: flex;
+  justify-content: center;
+}
+
+.staff-banner {
+  display: block;
+  width: min(100%, 520px);
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 22px;
+  border: 3px solid #ffffff;
+  background: rgba(255,255,255,0.08);
+  padding: 4px;
+  box-shadow: 0 0 0 5px rgba(215,25,32,0.22), 0 16px 38px rgba(25,0,2,0.48);
+}
+
+.staff-banner:hover {
+  transform: scale(1.01);
+  filter: brightness(1.03);
+  transition: 0.2s ease;
+}
+
+@media (max-width: 550px) {
+  .staff-banner {
+    width: 100%;
+    border-radius: 16px;
+  }
+}
+
+
+.staff-banner-container {
+  width: 100%;
+  margin: 12px 0 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.staff-banner {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 24px;
+  border: 3px solid rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.08);
+  padding: 4px;
+  box-shadow: 0 0 0 5px rgba(215,25,32,0.22), 0 16px 38px rgba(25,0,2,0.48);
+}
+
+.search-container.search-relocated {
+  margin-top: 18px;
+  margin-bottom: 24px;
+  max-width: 420px;
+}
+
+@media (max-width: 550px) {
+  .staff-banner {
+    max-height: none;
+    border-radius: 18px;
+  }
+  .search-container.search-relocated {
+    max-width: 100%;
+    margin-top: 14px;
+    margin-bottom: 20px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -818,7 +893,7 @@ function renderByCurrentIndex(direction) {
   
   const renderNameList = (list) => list.length ? list.map(item => `<div class="name-item ${roleClass(item.role)}" onclick="showStaffProfile('${item.nama.replace(/'/g,"\\'")}')">${roleEmoji(item.role)} ${item.nama}</div>`).join('') : `<div class="empty-state">— Tidak ada staff —</div>`;
   const animClass = direction === 'left' ? 'slide-left' : direction === 'right' ? 'slide-right' : '';
-  const photoHTML = `<div class="staff-photo-container"><img src="https://i.postimg.cc/NM92yvqn/2.png" alt="Foto Staff" class="staff-photo" loading="eager"></div>`;
+  const photoHTML = `<div class="staff-banner-container"><img src="https://i.postimg.cc/0jD1fYH1/39fc3685-c4d1-434a-a661-d242f2a668fe.png" alt="Banner Staff" class="staff-banner" loading="eager"></div>`;
   
   const noScheduleHTML = `
     <div class="no-schedule-box" id="noScheduleBox" style="${isAllEmpty ? '' : 'display:none;'}">
@@ -856,11 +931,11 @@ function renderByCurrentIndex(direction) {
         <select id="monthPicker" class="month-picker-select"></select>
       </div>
       ${photoHTML}
-      <div class="search-container">
+      <div class="date-title">📅 ${tanggalFormatted}</div>
+      <div class="search-container search-relocated">
         <input type="text" id="searchStaff" class="search-input" placeholder="🔍 Cari nama staff..." autocomplete="off">
         <button class="search-clear" id="searchClear" title="Hapus pencarian">✕</button>
       </div>
-      <div class="date-title">📅 ${tanggalFormatted}</div>
       ${noScheduleHTML}
       ${shiftContentHTML}
       <div class="swipe-hint">👈 Geser untuk navigasi 👉</div>
