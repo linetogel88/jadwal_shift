@@ -644,9 +644,10 @@ body::after {
   box-shadow: 0 0 0 5px rgba(215,25,32,0.22), 0 16px 38px rgba(25,0,2,0.48);
 }
 
-/* Latar dan GIF utama dibuat penuh ke kolom */
+/* GIF memenuhi seluruh kolom tanpa terpotong */
 .staff-banner-container::before {
   content: "";
+  display: none;
   position: absolute;
   inset: -18px;
   background-image: url("https://www.image2url.com/r2/default/gifs/1784948044626-c3b1ebcc-87c7-48a9-8279-161c60531075.gif");
@@ -665,7 +666,7 @@ body::after {
   width: 100%;
   height: 100%;
   max-width: 100%;
-  object-fit: cover;
+  object-fit: fill;
   object-position: center center;
   border-radius: 19px;
   border: 0;
@@ -687,7 +688,7 @@ body::after {
   }
   .staff-banner {
     height: 100%;
-    object-fit: cover;
+    object-fit: fill;
     border-radius: 13px;
   }
   .search-container.search-relocated {
