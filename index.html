@@ -606,7 +606,7 @@ body::after {
   width: min(100%, 520px);
   max-width: 100%;
   height: auto;
-  object-fit: contain;
+  object-fit: cover;
   border-radius: 22px;
   border: 3px solid #ffffff;
   background: rgba(255,255,255,0.08);
@@ -629,24 +629,49 @@ body::after {
 
 
 .staff-banner-container {
+  position: relative;
   width: 100%;
+  height: clamp(150px, 12vw, 220px);
   margin: 12px 0 18px;
   display: flex;
   justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 3px solid rgba(255,255,255,0.9);
+  background: #300106;
+  padding: 4px;
+  box-shadow: 0 0 0 5px rgba(215,25,32,0.22), 0 16px 38px rgba(25,0,2,0.48);
+}
+
+/* Latar dan GIF utama dibuat penuh ke kolom */
+.staff-banner-container::before {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  background-image: url("https://www.image2url.com/r2/default/gifs/1784948044626-c3b1ebcc-87c7-48a9-8279-161c60531075.gif");
+  background-size: cover;
+  background-position: center;
+  filter: blur(18px) brightness(0.42) saturate(1.15);
+  transform: scale(1.08);
+  opacity: 0.9;
+  pointer-events: none;
 }
 
 .staff-banner {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
+  height: 100%;
   max-width: 100%;
-  height: auto;
-  max-height: 220px;
   object-fit: cover;
-  border-radius: 24px;
-  border: 3px solid rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.08);
-  padding: 4px;
-  box-shadow: 0 0 0 5px rgba(215,25,32,0.22), 0 16px 38px rgba(25,0,2,0.48);
+  object-position: center center;
+  border-radius: 19px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
 }
 
 .search-container.search-relocated {
@@ -656,9 +681,14 @@ body::after {
 }
 
 @media (max-width: 550px) {
-  .staff-banner {
-    max-height: none;
+  .staff-banner-container {
+    height: clamp(100px, 25vw, 150px);
     border-radius: 18px;
+  }
+  .staff-banner {
+    height: 100%;
+    object-fit: cover;
+    border-radius: 13px;
   }
   .search-container.search-relocated {
     max-width: 100%;
@@ -1037,7 +1067,7 @@ function renderByCurrentIndex(direction) {
   
   const renderNameList = (list) => list.length ? list.map(item => `<div class="name-item ${roleClass(item.role)}" onclick="showStaffProfile('${item.nama.replace(/'/g,"\\'")}')">${roleEmoji(item.role)} ${item.nama}</div>`).join('') : `<div class="empty-state">— Tidak ada staff —</div>`;
   const animClass = direction === 'left' ? 'slide-left' : direction === 'right' ? 'slide-right' : '';
-  const photoHTML = `<div class="staff-banner-container"><img src="https://i.postimg.cc/PqbSvD49/Chat-GPT-Image-24-Jul-2026-10-19-06.png" alt="Banner Staff" class="staff-banner" loading="eager"></div>`;
+  const photoHTML = `<div class="staff-banner-container"><img src="https://www.image2url.com/r2/default/gifs/1784948044626-c3b1ebcc-87c7-48a9-8279-161c60531075.gif" alt="Banner Staff" class="staff-banner" loading="eager"></div>`;
   
   const noScheduleHTML = `
     <div class="no-schedule-box" id="noScheduleBox" style="${isAllEmpty ? '' : 'display:none;'}">
