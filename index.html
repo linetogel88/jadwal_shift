@@ -952,8 +952,49 @@ body {
   border-left: 3px solid #38bdf8;
 }
 
+.ssi-cuti {
+  border-left: 3px solid #f472b6;
+  background: linear-gradient(145deg, rgba(236,72,153,.18), rgba(190,24,93,.12));
+}
+
+.ssi-cuti .ssi-count {
+  color: #f9a8d4;
+}
+
+.cuti-card {
+  margin-top: 18px;
+  overflow: hidden;
+  border-color: rgba(244,114,182,.6);
+  background:
+    radial-gradient(circle at 92% 0%, rgba(244,114,182,.16), transparent 34%),
+    linear-gradient(145deg, rgba(80,7,36,.94), rgba(39,4,22,.96));
+  box-shadow: 0 14px 34px rgba(43,4,24,.42), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.cuti-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 16px;
+  color: #fff1f2;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  text-align: center;
+  background: linear-gradient(135deg, #be185d, #db2777);
+  border-bottom: 1px solid rgba(255,255,255,.28);
+  text-shadow: 0 2px 8px rgba(0,0,0,.28);
+}
+
+.cuti-card .name-item {
+  background: linear-gradient(90deg, rgba(190,24,93,.34), rgba(131,24,67,.2));
+  border-left-color: #f9a8d4;
+}
+
 @media (max-width: 550px) {
-  .change-shift-header {
+  .change-shift-header,
+  .cuti-header {
     padding: 11px 12px;
     font-size: 14px;
   }
@@ -1015,7 +1056,7 @@ let masterTanggalList = [];
 let masterStaffRows = [];
 let availableMonths = []; 
 let currentIndex = -1;
-let currentDataForSearch = { PAGI: [], MALAM: [], OFFDAY: [], CHANGE_SHIFT: [] };
+let currentDataForSearch = { PAGI: [], MALAM: [], OFFDAY: [], CHANGE_SHIFT: [], CUTI: [] };
 let currentSearchTerm = "";
 let lastFetchTime = null;
 let autoRefreshInterval = null;
@@ -1086,11 +1127,12 @@ function renderFilteredLists() {
   const filteredMalam = filterList(currentDataForSearch.MALAM);
   const filteredOffday = filterList(currentDataForSearch.OFFDAY);
   const filteredChangeShift = filterList(currentDataForSearch.CHANGE_SHIFT);
+  const filteredCuti = filterList(currentDataForSearch.CUTI);
   
   const noScheduleBox = document.getElementById('noScheduleBox');
   const shiftContent = document.getElementById('shiftContent');
   if (noScheduleBox && shiftContent) {
-    const isAllEmpty = filteredPagi.length === 0 && filteredMalam.length === 0 && filteredOffday.length === 0 && filteredChangeShift.length === 0;
+    const isAllEmpty = filteredPagi.length === 0 && filteredMalam.length === 0 && filteredOffday.length === 0 && filteredChangeShift.length === 0 && filteredCuti.length === 0;
     noScheduleBox.style.display = isAllEmpty ? 'block' : 'none';
     shiftContent.style.display = isAllEmpty ? 'none' : 'block';
   }
@@ -1103,22 +1145,26 @@ function renderFilteredLists() {
   const malamDiv = document.getElementById('malamList');
   const offdayDiv = document.getElementById('offdayList');
   const changeShiftDiv = document.getElementById('changeShiftList');
+  const cutiDiv = document.getElementById('cutiList');
   if (pagiDiv) pagiDiv.innerHTML = renderNameList(filteredPagi);
   if (malamDiv) malamDiv.innerHTML = renderNameList(filteredMalam);
   if (offdayDiv) offdayDiv.innerHTML = renderNameList(filteredOffday);
   if (changeShiftDiv) changeShiftDiv.innerHTML = renderNameList(filteredChangeShift);
-  updateShiftSummary(filteredPagi.length, filteredMalam.length, filteredOffday.length, filteredChangeShift.length);
+  if (cutiDiv) cutiDiv.innerHTML = renderNameList(filteredCuti);
+  updateShiftSummary(filteredPagi.length, filteredMalam.length, filteredOffday.length, filteredChangeShift.length, filteredCuti.length);
 }
 
-function updateShiftSummary(pagiCount, malamCount, offCount, changeShiftCount) {
+function updateShiftSummary(pagiCount, malamCount, offCount, changeShiftCount, cutiCount) {
   const pc = document.getElementById('ssiPagiCount');
   const mc = document.getElementById('ssiMalamCount');
   const oc = document.getElementById('ssiOffCount');
   const cc = document.getElementById('ssiChangeShiftCount');
+  const cuc = document.getElementById('ssiCutiCount');
   if (pc) pc.textContent = pagiCount;
   if (mc) mc.textContent = malamCount;
   if (oc) oc.textContent = offCount;
   if (cc) cc.textContent = changeShiftCount;
+  if (cuc) cuc.textContent = cutiCount;
 }
 
 function initSearch() {
@@ -1194,7 +1240,7 @@ function renderByCurrentIndex(direction) {
   const target = masterTanggalList[currentIndex];
   const colIndex = target.colIndex;
   const tanggalFormatted = formatDateIndonesia(target.dateObj);
-  const data = { PAGI: [], MALAM: [], OFFDAY: [], CHANGE_SHIFT: [] };
+  const data = { PAGI: [], MALAM: [], OFFDAY: [], CHANGE_SHIFT: [], CUTI: [] };
   
   for (let staff of masterStaffRows) {
     const shiftRaw = staff.shiftsByCol[colIndex] || "";
@@ -1202,10 +1248,10 @@ function renderByCurrentIndex(direction) {
     if (staff.nama && data[shift]) data[shift].push({ nama: staff.nama, role: staff.role });
   }
   Object.keys(data).forEach(shift => data[shift].sort((a,b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role)));
-  currentDataForSearch = { PAGI: data.PAGI, MALAM: data.MALAM, OFFDAY: data.OFFDAY, CHANGE_SHIFT: data.CHANGE_SHIFT };
+  currentDataForSearch = { PAGI: data.PAGI, MALAM: data.MALAM, OFFDAY: data.OFFDAY, CHANGE_SHIFT: data.CHANGE_SHIFT, CUTI: data.CUTI };
   currentSearchTerm = "";
   
-  const isAllEmpty = data.PAGI.length === 0 && data.MALAM.length === 0 && data.OFFDAY.length === 0 && data.CHANGE_SHIFT.length === 0;
+  const isAllEmpty = data.PAGI.length === 0 && data.MALAM.length === 0 && data.OFFDAY.length === 0 && data.CHANGE_SHIFT.length === 0 && data.CUTI.length === 0;
   
   const renderNameList = (list) => list.length ? list.map(item => `<div class="name-item ${roleClass(item.role)}" onclick="showStaffProfile('${item.nama.replace(/'/g,"\\'")}')">${roleEmoji(item.role)} ${item.nama}</div>`).join('') : `<div class="empty-state">— Tidak ada staff —</div>`;
   const animClass = direction === 'left' ? 'slide-left' : direction === 'right' ? 'slide-right' : '';
@@ -1227,6 +1273,7 @@ function renderByCurrentIndex(direction) {
         <div class="shift-summary-item ssi-malam"><span class="ssi-icon">🌙</span><span class="ssi-count" id="ssiMalamCount">${data.MALAM.length}</span><span class="ssi-label">Malam</span></div>
         <div class="shift-summary-item ssi-off"><span class="ssi-icon">🚫</span><span class="ssi-count" id="ssiOffCount">${data.OFFDAY.length}</span><span class="ssi-label">Off</span></div>
         <div class="shift-summary-item ssi-change"><span class="ssi-icon">🔄</span><span class="ssi-count" id="ssiChangeShiftCount">${data.CHANGE_SHIFT.length}</span><span class="ssi-label">Change Shift</span></div>
+        <div class="shift-summary-item ssi-cuti"><span class="ssi-icon">🌴</span><span class="ssi-count" id="ssiCutiCount">${data.CUTI.length}</span><span class="ssi-label">Cuti</span></div>
       </div>
       <div class="wrapper-grid">
         <div class="shift-card"><div class="shift-header">🌅 SHIFT PAGI</div><div class="jam-block">07:45 - 19:45</div><div class="name-list" id="pagiList">${renderNameList(data.PAGI)}</div></div>
@@ -1234,6 +1281,7 @@ function renderByCurrentIndex(direction) {
       </div>
       <div class="shift-card change-shift-card"><div class="change-shift-header">🔄 KETERANGAN: CHANGE SHIFT</div><div class="name-list" id="changeShiftList">${renderNameList(data.CHANGE_SHIFT)}</div></div>
       <div class="shift-card offday-card"><div class="offday-header">🚫 OFFDAY / LIBUR</div><div class="name-list" id="offdayList">${renderNameList(data.OFFDAY)}</div></div>
+      <div class="shift-card cuti-card"><div class="cuti-header">🌴 CUTI</div><div class="name-list" id="cutiList">${renderNameList(data.CUTI)}</div></div>
     </div>`;
   
   const html = `
