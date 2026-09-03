@@ -902,6 +902,63 @@ body {
   }
 }
 
+/* =========================================================
+   KETERANGAN CHANGE SHIFT
+   Tampilan tambahan tanpa mengubah fungsi jadwal yang ada.
+   ========================================================= */
+.ssi-change {
+  border-left: 3px solid #38bdf8;
+  background: linear-gradient(145deg, rgba(14,165,233,.18), rgba(37,99,235,.12));
+}
+
+.ssi-change .ssi-count {
+  color: #7dd3fc;
+}
+
+.change-shift-card {
+  margin-bottom: 18px;
+  overflow: hidden;
+  border-color: rgba(125,211,252,.64);
+  background:
+    radial-gradient(circle at 92% 0%, rgba(56,189,248,.16), transparent 34%),
+    linear-gradient(145deg, rgba(8,47,73,.94), rgba(15,23,42,.96));
+  box-shadow: 0 14px 34px rgba(2,20,38,.42), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.change-shift-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 16px;
+  color: #e0f2fe;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  text-align: center;
+  background: linear-gradient(135deg, #0369a1, #2563eb);
+  border-bottom: 1px solid rgba(255,255,255,.28);
+  text-shadow: 0 2px 8px rgba(0,0,0,.28);
+}
+
+.change-shift-card .name-item {
+  background: linear-gradient(90deg, rgba(3,105,161,.36), rgba(37,99,235,.18));
+  border-left-color: #7dd3fc;
+}
+
+.profile-day-item.pd-change {
+  color: #bae6fd;
+  background: linear-gradient(135deg, #075985, #1e3a8a);
+  border-left: 3px solid #38bdf8;
+}
+
+@media (max-width: 550px) {
+  .change-shift-header {
+    padding: 11px 12px;
+    font-size: 14px;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -931,6 +988,7 @@ body {
     <h3 style="color:#ffeaaf; margin-bottom:20px;">📋 MENU</h3>
     <button class="modal-menu-btn" id="offdayMenuBtn">🚫 Rekap Offday </button>
     <button class="modal-menu-btn" id="cutiMenuBtn">🌴 Rekap Cuti </button>
+    <button class="modal-menu-btn" id="changeShiftMenuBtn">🔄 Rekap Change Shift</button>
     <button class="modal-menu-btn" id="refreshMenuBtn" style="background:#4caf50; color:white;">🔄 Refresh Data</button>
     <button class="modal-menu-btn close-modal" id="closeMainModal" style="background:#3d4a33; color:#ffefc0; margin-top:10px;">Tutup</button>
   </div>
@@ -957,7 +1015,7 @@ let masterTanggalList = [];
 let masterStaffRows = [];
 let availableMonths = []; 
 let currentIndex = -1;
-let currentDataForSearch = { PAGI: [], MALAM: [], OFFDAY: [] };
+let currentDataForSearch = { PAGI: [], MALAM: [], OFFDAY: [], CHANGE_SHIFT: [] };
 let currentSearchTerm = "";
 let lastFetchTime = null;
 let autoRefreshInterval = null;
@@ -1007,17 +1065,32 @@ function closeAllModals() { document.getElementById('mainModal').classList.remov
 function roleClass(role) { if (role === "CS LINE") return "role-csline"; if (role === "CS") return "role-cs"; if (role === "KKS") return "role-kks"; if (role === "KS") return "role-ks"; return ""; }
 function roleEmoji(role) { if (role === "CS LINE") return "💻"; if (role === "CS") return "🎧"; if (role === "KKS") return "👥"; if (role === "KS") return "👑"; return "👤"; }
 
+function normalizeShiftValue(value) {
+  return String(value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function getShiftKey(value) {
+  const normalized = normalizeShiftValue(value);
+  if (/^CHANGE\s*SHIFT\b/.test(normalized)) return "CHANGE_SHIFT";
+  return normalized;
+}
+
 function renderFilteredLists() {
   const searchTerm = currentSearchTerm.toLowerCase();
   const filterList = (list) => searchTerm ? list.filter(item => item.nama.toLowerCase().includes(searchTerm)) : list;
   const filteredPagi = filterList(currentDataForSearch.PAGI);
   const filteredMalam = filterList(currentDataForSearch.MALAM);
   const filteredOffday = filterList(currentDataForSearch.OFFDAY);
+  const filteredChangeShift = filterList(currentDataForSearch.CHANGE_SHIFT);
   
   const noScheduleBox = document.getElementById('noScheduleBox');
   const shiftContent = document.getElementById('shiftContent');
   if (noScheduleBox && shiftContent) {
-    const isAllEmpty = filteredPagi.length === 0 && filteredMalam.length === 0 && filteredOffday.length === 0;
+    const isAllEmpty = filteredPagi.length === 0 && filteredMalam.length === 0 && filteredOffday.length === 0 && filteredChangeShift.length === 0;
     noScheduleBox.style.display = isAllEmpty ? 'block' : 'none';
     shiftContent.style.display = isAllEmpty ? 'none' : 'block';
   }
@@ -1029,15 +1102,23 @@ function renderFilteredLists() {
   const pagiDiv = document.getElementById('pagiList');
   const malamDiv = document.getElementById('malamList');
   const offdayDiv = document.getElementById('offdayList');
+  const changeShiftDiv = document.getElementById('changeShiftList');
   if (pagiDiv) pagiDiv.innerHTML = renderNameList(filteredPagi);
   if (malamDiv) malamDiv.innerHTML = renderNameList(filteredMalam);
   if (offdayDiv) offdayDiv.innerHTML = renderNameList(filteredOffday);
-  updateShiftSummary(filteredPagi.length, filteredMalam.length, filteredOffday.length);
+  if (changeShiftDiv) changeShiftDiv.innerHTML = renderNameList(filteredChangeShift);
+  updateShiftSummary(filteredPagi.length, filteredMalam.length, filteredOffday.length, filteredChangeShift.length);
 }
 
-function updateShiftSummary(pagiCount, malamCount, offCount) {
-  const pc = document.getElementById('ssiPagiCount'); const mc = document.getElementById('ssiMalamCount'); const oc = document.getElementById('ssiOffCount');
-  if (pc) pc.textContent = pagiCount; if (mc) mc.textContent = malamCount; if (oc) oc.textContent = offCount;
+function updateShiftSummary(pagiCount, malamCount, offCount, changeShiftCount) {
+  const pc = document.getElementById('ssiPagiCount');
+  const mc = document.getElementById('ssiMalamCount');
+  const oc = document.getElementById('ssiOffCount');
+  const cc = document.getElementById('ssiChangeShiftCount');
+  if (pc) pc.textContent = pagiCount;
+  if (mc) mc.textContent = malamCount;
+  if (oc) oc.textContent = offCount;
+  if (cc) cc.textContent = changeShiftCount;
 }
 
 function initSearch() {
@@ -1052,21 +1133,22 @@ function initSearch() {
 function showStaffProfile(nama) {
   const staff = masterStaffRows.find(s => s.nama === nama);
   if (!staff) return;
-  let pagiCount = 0, malamCount = 0, offCount = 0, cutiCount = 0, emptyCount = 0;
+  let pagiCount = 0, malamCount = 0, offCount = 0, cutiCount = 0, changeShiftCount = 0, emptyCount = 0;
   let scheduleItems = [];
   for (let tgl of masterTanggalList) {
-    const shiftRaw = (staff.shiftsByCol[tgl.colIndex] || "").toUpperCase();
+    const shiftRaw = getShiftKey(staff.shiftsByCol[tgl.colIndex]);
     let cls = 'pd-empty', label = '❓ KOSONG';
     if (shiftRaw === 'PAGI') { cls = 'pd-pagi'; label = '🌅 PAGI'; pagiCount++; }
     else if (shiftRaw === 'MALAM') { cls = 'pd-malam'; label = '🌙 MALAM'; malamCount++; }
     else if (shiftRaw === 'CUTI') { cls = 'pd-cuti'; label = '🌴 CUTI'; cutiCount++; }
     else if (shiftRaw === 'OFFDAY') { cls = 'pd-off'; label = '🚫 OFF'; offCount++; }
+    else if (shiftRaw === 'CHANGE_SHIFT') { cls = 'pd-change'; label = '🔄 CHANGE SHIFT'; changeShiftCount++; }
     else { emptyCount++; }
     scheduleItems.push({ dateObj: tgl.dateObj, label, cls });
   }
-  const total = pagiCount + malamCount + offCount + cutiCount + emptyCount;
+  const total = pagiCount + malamCount + offCount + cutiCount + changeShiftCount + emptyCount;
   const scheduleHTML = scheduleItems.map(item => `<div class="profile-day-item ${item.cls}"><span class="pdi-date">${formatShortDate(item.dateObj)}</span>${item.label}</div>`).join('');
-  const html = `<div class="profile-header"><button class="profile-close" onclick="closeProfile()">✕</button><div class="profile-avatar">${roleEmoji(staff.role)}</div><div class="profile-name">${staff.nama}</div><div class="profile-role">${staff.role}</div><div class="profile-stats-row"><span class="profile-stat">🌅 Pagi: ${pagiCount}</span><span class="profile-stat">🌙 Malam: ${malamCount}</span><span class="profile-stat">🚫 Off: ${offCount}</span><span class="profile-stat">🌴 Cuti: ${cutiCount}</span></div></div><div class="profile-body"><div class="profile-section-title">📅 Jadwal ${total} Hari Ke Depan</div><div class="profile-schedule-grid">${scheduleHTML}</div></div>`;
+  const html = `<div class="profile-header"><button class="profile-close" onclick="closeProfile()">✕</button><div class="profile-avatar">${roleEmoji(staff.role)}</div><div class="profile-name">${staff.nama}</div><div class="profile-role">${staff.role}</div><div class="profile-stats-row"><span class="profile-stat">🌅 Pagi: ${pagiCount}</span><span class="profile-stat">🌙 Malam: ${malamCount}</span><span class="profile-stat">🚫 Off: ${offCount}</span><span class="profile-stat">🌴 Cuti: ${cutiCount}</span><span class="profile-stat">🔄 Change: ${changeShiftCount}</span></div></div><div class="profile-body"><div class="profile-section-title">📅 Jadwal ${total} Hari Ke Depan</div><div class="profile-schedule-grid">${scheduleHTML}</div></div>`;
   document.getElementById('profileCard').innerHTML = html;
   document.getElementById('profileOverlay').classList.add('active');
   showToast(`Profil: ${staff.nama}`, 'info', 1500);
@@ -1112,18 +1194,18 @@ function renderByCurrentIndex(direction) {
   const target = masterTanggalList[currentIndex];
   const colIndex = target.colIndex;
   const tanggalFormatted = formatDateIndonesia(target.dateObj);
-  const data = { PAGI: [], MALAM: [], OFFDAY: [] };
+  const data = { PAGI: [], MALAM: [], OFFDAY: [], CHANGE_SHIFT: [] };
   
   for (let staff of masterStaffRows) {
     const shiftRaw = staff.shiftsByCol[colIndex] || "";
-    const shift = shiftRaw.toUpperCase();
+    const shift = getShiftKey(shiftRaw);
     if (staff.nama && data[shift]) data[shift].push({ nama: staff.nama, role: staff.role });
   }
   Object.keys(data).forEach(shift => data[shift].sort((a,b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role)));
-  currentDataForSearch = { PAGI: data.PAGI, MALAM: data.MALAM, OFFDAY: data.OFFDAY };
+  currentDataForSearch = { PAGI: data.PAGI, MALAM: data.MALAM, OFFDAY: data.OFFDAY, CHANGE_SHIFT: data.CHANGE_SHIFT };
   currentSearchTerm = "";
   
-  const isAllEmpty = data.PAGI.length === 0 && data.MALAM.length === 0 && data.OFFDAY.length === 0;
+  const isAllEmpty = data.PAGI.length === 0 && data.MALAM.length === 0 && data.OFFDAY.length === 0 && data.CHANGE_SHIFT.length === 0;
   
   const renderNameList = (list) => list.length ? list.map(item => `<div class="name-item ${roleClass(item.role)}" onclick="showStaffProfile('${item.nama.replace(/'/g,"\\'")}')">${roleEmoji(item.role)} ${item.nama}</div>`).join('') : `<div class="empty-state">— Tidak ada staff —</div>`;
   const animClass = direction === 'left' ? 'slide-left' : direction === 'right' ? 'slide-right' : '';
@@ -1144,11 +1226,13 @@ function renderByCurrentIndex(direction) {
         <div class="shift-summary-item ssi-pagi"><span class="ssi-icon">🌅</span><span class="ssi-count" id="ssiPagiCount">${data.PAGI.length}</span><span class="ssi-label">Pagi</span></div>
         <div class="shift-summary-item ssi-malam"><span class="ssi-icon">🌙</span><span class="ssi-count" id="ssiMalamCount">${data.MALAM.length}</span><span class="ssi-label">Malam</span></div>
         <div class="shift-summary-item ssi-off"><span class="ssi-icon">🚫</span><span class="ssi-count" id="ssiOffCount">${data.OFFDAY.length}</span><span class="ssi-label">Off</span></div>
+        <div class="shift-summary-item ssi-change"><span class="ssi-icon">🔄</span><span class="ssi-count" id="ssiChangeShiftCount">${data.CHANGE_SHIFT.length}</span><span class="ssi-label">Change Shift</span></div>
       </div>
       <div class="wrapper-grid">
         <div class="shift-card"><div class="shift-header">🌅 SHIFT PAGI</div><div class="jam-block">07:45 - 19:45</div><div class="name-list" id="pagiList">${renderNameList(data.PAGI)}</div></div>
         <div class="shift-card"><div class="shift-header">🌙 SHIFT MALAM</div><div class="jam-block">19:45 - 07:45</div><div class="name-list" id="malamList">${renderNameList(data.MALAM)}</div></div>
       </div>
+      <div class="shift-card change-shift-card"><div class="change-shift-header">🔄 KETERANGAN: CHANGE SHIFT</div><div class="name-list" id="changeShiftList">${renderNameList(data.CHANGE_SHIFT)}</div></div>
       <div class="shift-card offday-card"><div class="offday-header">🚫 OFFDAY / LIBUR</div><div class="name-list" id="offdayList">${renderNameList(data.OFFDAY)}</div></div>
     </div>`;
   
@@ -1258,7 +1342,7 @@ function fetchData(isRefresh) {
 
 const mainModal = document.getElementById('mainModal'), subModal = document.getElementById('subModal');
 const hamburgerBtn = document.getElementById('hamburgerBtn'), closeMainBtn = document.getElementById('closeMainModal');
-const offdayMenuBtn = document.getElementById('offdayMenuBtn'), cutiMenuBtn = document.getElementById('cutiMenuBtn'), refreshMenuBtn = document.getElementById('refreshMenuBtn');
+const offdayMenuBtn = document.getElementById('offdayMenuBtn'), cutiMenuBtn = document.getElementById('cutiMenuBtn'), changeShiftMenuBtn = document.getElementById('changeShiftMenuBtn'), refreshMenuBtn = document.getElementById('refreshMenuBtn');
 
 function closeMainModalFunc() { mainModal.classList.remove('active'); }
 function closeSubModalFunc() { subModal.classList.remove('active'); }
@@ -1316,8 +1400,31 @@ function showAllCutiModal() {
   document.getElementById('closeSubBtnCuti').onclick = closeSubModalFunc;
 }
 
+function showAllChangeShiftModal() {
+  if (!masterTanggalList.length || currentIndex === -1) return;
+
+  let contentHTML = `<h4>🔄 Rekap Change Shift</h4><div style="margin-bottom:12px; font-weight:bold; color:#7dd3fc;">Semua Data Tersedia</div>`;
+  let foundAny = false;
+
+  masterTanggalList.forEach(day => {
+    const changeShiftStaff = masterStaffRows.filter(s => getShiftKey(s.shiftsByCol[day.colIndex]) === "CHANGE_SHIFT");
+    if (changeShiftStaff.length > 0) {
+      foundAny = true;
+      contentHTML += `<div style="text-align:left; background:linear-gradient(135deg,rgba(3,105,161,.28),rgba(37,99,235,.18)); padding:8px 12px; border-radius:12px; margin-bottom:8px; border-left:3px solid #38bdf8;"><div style="font-size:12px; color:#bae6fd; margin-bottom:4px;">📅 ${formatDateIndonesia(day.dateObj)}</div><ul class="staff-list" style="margin:0;">${changeShiftStaff.map(s => `<li style="margin:4px 0; padding:8px; font-size:13px;">${roleEmoji(s.role)} ${s.nama}</li>`).join('')}</ul></div>`;
+    }
+  });
+
+  if (!foundAny) contentHTML += `<div class="empty-list">Tidak ada keterangan CHANGE SHIFT dalam rentang waktu ini</div>`;
+  contentHTML += `<button class="close-sub" id="closeSubBtnChangeShift">Tutup</button>`;
+
+  document.getElementById('subModalContent').innerHTML = contentHTML;
+  subModal.classList.add('active');
+  document.getElementById('closeSubBtnChangeShift').onclick = closeSubModalFunc;
+}
+
 offdayMenuBtn.onclick = () => { closeMainModalFunc(); showAllOffdayModal(); };
 cutiMenuBtn.onclick = () => { closeMainModalFunc(); showAllCutiModal(); };
+changeShiftMenuBtn.onclick = () => { closeMainModalFunc(); showAllChangeShiftModal(); };
 
 fetchData(false);
 startAutoRefresh();
